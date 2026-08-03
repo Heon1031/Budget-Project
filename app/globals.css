@@ -47,11 +47,11 @@ button { color: inherit; cursor: pointer; }
 .person-2 .person-title > span { background: var(--purple); }
 .person-title input { width: 110px; border: 0; border-bottom: 1px dashed var(--line); outline: 0; color: var(--ink); font-weight: 900; background: transparent; }
 .field { display: block; margin-top: 11px; }
-.field > span { min-height: 16px; display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: 10px; }
+.field > span { min-height: 18px; display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: 11px; }
 .field small { padding: 2px 5px; border-radius: 5px; background: #efeee9; color: #7a7a70; font-size: 8px; }
 .money-field { display: flex; align-items: center; border: 1px solid var(--line); border-radius: 9px; background: #faf9f5; padding: 0 10px; }
 .money-field:focus-within { border-color: var(--green-2); outline: 3px solid rgba(58,128,117,.12); }
-.money-field input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; padding: 10px 0; text-align: right; color: var(--ink); font-weight: 800; font-size: 12px; }
+.money-field input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; padding: 12px 0; text-align: right; color: var(--ink); font-weight: 800; font-size: 13px; }
 .money-field b { margin-left: 6px; color: var(--muted); font-size: 9px; white-space: nowrap; }
 .net-result { margin: 16px -18px 5px; padding: 15px 18px; display: grid; background: #edf5f1; }
 .person-2 .net-result { background: #f2eef7; }
@@ -65,16 +65,27 @@ button { color: inherit; cursor: pointer; }
 .personal-divider { display: flex; align-items: center; gap: 8px; margin: 18px 0 8px; color: var(--green); font-size: 9px; font-weight: 900; }
 .personal-divider::before, .personal-divider::after { content: ""; height: 1px; background: var(--line); flex: 1; }
 .rate-list { display: grid; gap: 9px; }
-.rate-field { display: block; padding: 11px; border-radius: 10px; background: #f7f7f2; border: 1px solid #e7e8e2; }
+.rate-field { display: block; padding: 13px; border-radius: 11px; background: #f7f7f2; border: 1px solid #e7e8e2; }
 .rate-field > span, .rate-output { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-.rate-field > span strong { font-size: 10px; }
-.rate-field > span small { color: var(--muted); font-size: 8px; }
+.rate-field > span strong { font-size: 12px; }
+.rate-field > span small { color: var(--muted); font-size: 9px; }
 .rate-output { margin: 7px 0 5px; }
 .rate-output b { color: var(--green); font-family: Georgia, serif; font-size: 18px; }
 .person-2 .rate-output b { color: var(--purple); }
-.rate-output strong { font-size: 11px; }
+.rate-output strong { font-size: 12px; }
 .rate-field input { width: 100%; accent-color: var(--green-2); }
 .person-2 .rate-field input { accent-color: var(--purple); }
+.investment-group { border: 1px solid #dce4de; border-radius: 11px; overflow: hidden; background: #f2f6f3; }
+.investment-toggle { width: 100%; padding: 13px; display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; border: 0; background: transparent; text-align: left; }
+.investment-toggle > span { display: grid; }
+.investment-toggle > span:nth-child(2) { text-align: right; }
+.investment-toggle strong { font-size: 12px; }
+.investment-toggle small { color: var(--muted); font-size: 9px; }
+.investment-toggle b { color: var(--green); font-family: Georgia, serif; font-size: 18px; }
+.person-2 .investment-toggle b { color: var(--purple); }
+.investment-toggle i { grid-column: 1 / -1; color: var(--muted); font-size: 8px; font-style: normal; }
+.investment-details { padding: 0 13px 13px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; border-top: 1px solid #dce4de; }
+.investment-details .field { margin-top: 10px; }
 .allocation-total { margin: 15px -18px -18px; padding: 14px 18px; display: grid; grid-template-columns: 1fr auto; align-items: center; background: #e7f2ec; color: var(--green); border-radius: 0 0 12px 12px; }
 .person-2 .allocation-total { background: #eee9f4; color: var(--purple); }
 .allocation-total span { font-size: 9px; }
@@ -174,6 +185,7 @@ footer p { margin: 0; }
   .card { padding: 21px 17px; border-radius: 16px; }
   .marriage-note { align-items: flex-start; flex-direction: column; }
   .salary-grid, .goal-grid, .choice-grid, .housing-grid { grid-template-columns: 1fr; }
+  .investment-details { grid-template-columns: 1fr; }
   .choice-grid .field:last-child { grid-column: auto; }
   .goal-callout { grid-template-columns: 1fr; }
   .goal-callout > div { border-left: 0; border-top: 1px solid rgba(255,255,255,.14); }

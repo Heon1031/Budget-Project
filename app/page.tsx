@@ -7,10 +7,14 @@ type Person = {
   annualGross: number;
   monthlyNonTaxable: number;
   actualNet: number;
-  investmentRate: number;
+  monthlyDeposit: number;
+  monthlyInvest: number;
+  monthlyPension: number;
+  monthlyEmergency: number;
   foodRate: number;
   cultureRate: number;
   travelRate: number;
+  cashRate: number;
 };
 
 type Plan = {
@@ -20,7 +24,11 @@ type Plan = {
   monthlyRent: number;
   otherLoan: number;
   housingSubscription: number;
-  annualReturnRate: number;
+  electricity: number;
+  gas: number;
+  water: number;
+  telecom: number;
+  managementFee: number;
 };
 
 type AppState = {
@@ -29,7 +37,7 @@ type AppState = {
   marriageRegistered: boolean;
 };
 
-const STORAGE_KEY = "duri-asset-plan-v3";
+const STORAGE_KEY = "duri-asset-plan-v4";
 const RULES = {
   year: 2026,
   pensionEmployee: 0.0475,
@@ -48,20 +56,28 @@ const initialState: AppState = {
       annualGross: 52_000_000,
       monthlyNonTaxable: 200_000,
       actualNet: 0,
-      investmentRate: 30,
+      monthlyDeposit: 700_000,
+      monthlyInvest: 400_000,
+      monthlyPension: 150_000,
+      monthlyEmergency: 100_000,
       foodRate: 15,
       cultureRate: 5,
       travelRate: 5,
+      cashRate: 10,
     },
     {
       name: "배우자",
       annualGross: 40_000_000,
       monthlyNonTaxable: 200_000,
       actualNet: 0,
-      investmentRate: 30,
+      monthlyDeposit: 500_000,
+      monthlyInvest: 300_000,
+      monthlyPension: 120_000,
+      monthlyEmergency: 80_000,
       foodRate: 15,
       cultureRate: 5,
       travelRate: 5,
+      cashRate: 10,
     },
   ],
   plan: {
@@ -71,7 +87,11 @@ const initialState: AppState = {
     monthlyRent: 0,
     otherLoan: 0,
     housingSubscription: 250_000,
-    annualReturnRate: 3,
+    electricity: 60_000,
+    gas: 50_000,
+    water: 25_000,
+    telecom: 70_000,
+    managementFee: 150_000,
   },
   marriageRegistered: false,
 };
@@ -210,7 +230,7 @@ function RateField({
       <input
         type="range"
         min="0"
-        max="60"
+        max="100"
         step="1"
         value={rate}
         onChange={(event) => onChange(Number(event.target.value))}
@@ -224,6 +244,7 @@ export default function Home() {
   const [state, setState] = useState<AppState>(initialState);
   const [hydrated, setHydrated] = useState(false);
   const [openBreakdown, setOpenBreakdown] = useState<0 | 1 | null>(null);
+  const [openInvestment, setOpenInvestment] = useState<0 | 1 | null>(0);
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -253,22 +274,33 @@ export default function Home() {
       : [0.5, 0.5];
     const personal = state.people.map((person, index) => {
       const net = salary[index].net;
-      const investment = net * (person.investmentRate / 100);
+      const investment =
+        person.monthlyDeposit +
+        person.monthlyInvest +
+        person.monthlyPension +
+        person.monthlyEmergency;
+      const investmentRate = net > 0 ? (investment / net) * 100 : 0;
       const food = net * (person.foodRate / 100);
       const culture = net * (person.cultureRate / 100);
       const travel = net * (person.travelRate / 100);
-      const total = investment + food + culture + travel;
-      return { investment, food, culture, travel, total, remaining: net - total };
+      const cash = net * (person.cashRate / 100);
+      const total = investment + food + culture + travel + cash;
+      return { investment, investmentRate, food, culture, travel, cash, total, remaining: net - total };
     }) as [
-      { investment: number; food: number; culture: number; travel: number; total: number; remaining: number },
-      { investment: number; food: number; culture: number; travel: number; total: number; remaining: number },
+      { investment: number; investmentRate: number; food: number; culture: number; travel: number; cash: number; total: number; remaining: number },
+      { investment: number; investmentRate: number; food: number; culture: number; travel: number; cash: number; total: number; remaining: number },
     ];
     const housingOutflow =
       state.plan.jeonseLoan +
       state.plan.mortgageLoan +
       state.plan.monthlyRent +
       state.plan.otherLoan +
-      state.plan.housingSubscription;
+      state.plan.housingSubscription +
+      state.plan.electricity +
+      state.plan.gas +
+      state.plan.water +
+      state.plan.telecom +
+      state.plan.managementFee;
     const monthlyAssetContribution =
       personal[0].investment +
       personal[1].investment +
@@ -278,19 +310,19 @@ export default function Home() {
       personal[0].food +
       personal[0].culture +
       personal[0].travel +
+      personal[0].cash +
       personal[1].food +
       personal[1].culture +
       personal[1].travel +
+      personal[1].cash +
       housingExpense;
     const householdRemaining = totalNet - monthlyAssetContribution - monthlySpending;
     const projection = [1, 3, 5, 10].map((years) => {
       const months = years * 12;
-      const monthlyRate = state.plan.annualReturnRate / 100 / 12;
-      const currentFuture = state.plan.currentAssets * Math.pow(1 + monthlyRate, months);
-      const contributionFuture = monthlyRate > 0
-        ? monthlyAssetContribution * ((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate)
-        : monthlyAssetContribution * months;
-      return { years, amount: currentFuture + contributionFuture };
+      return {
+        years,
+        amount: state.plan.currentAssets + monthlyAssetContribution * months,
+      };
     });
     return {
       totalNet,
@@ -373,39 +405,54 @@ export default function Home() {
                     )}
                     <div className="personal-divider"><span>실수령액 100% 나누기</span></div>
                     <div className="rate-list">
-                      <RateField
-                        label="투자·적금"
-                        guide="30% 이상 권장"
-                        rate={person.investmentRate}
-                        net={calc.net}
-                        onChange={(investmentRate) => updatePerson(index as 0 | 1, { investmentRate })}
-                      />
+                      <div className="investment-group">
+                        <button className="investment-toggle" onClick={() => setOpenInvestment(openInvestment === index ? null : index as 0 | 1)}>
+                          <span><strong>투자·적금</strong><small>권장 30~40%</small></span>
+                          <span><b>{result.personal[index].investmentRate.toFixed(1)}%</b><strong>{won(result.personal[index].investment)}</strong></span>
+                          <i>{openInvestment === index ? "접기 −" : "세부 입력 +"}</i>
+                        </button>
+                        {openInvestment === index && (
+                          <div className="investment-details">
+                            <MoneyField label="예금·적금" value={person.monthlyDeposit} onChange={(monthlyDeposit) => updatePerson(index as 0 | 1, { monthlyDeposit })} />
+                            <MoneyField label="주식·펀드" value={person.monthlyInvest} onChange={(monthlyInvest) => updatePerson(index as 0 | 1, { monthlyInvest })} />
+                            <MoneyField label="연금·IRP" value={person.monthlyPension} onChange={(monthlyPension) => updatePerson(index as 0 | 1, { monthlyPension })} />
+                            <MoneyField label="비상금" value={person.monthlyEmergency} onChange={(monthlyEmergency) => updatePerson(index as 0 | 1, { monthlyEmergency })} />
+                          </div>
+                        )}
+                      </div>
                       <RateField
                         label="식생활비"
-                        guide="15% 기준"
+                        guide="권장 10~15%"
                         rate={person.foodRate}
                         net={calc.net}
                         onChange={(foodRate) => updatePerson(index as 0 | 1, { foodRate })}
                       />
                       <RateField
                         label="문화·레저"
-                        guide="5% 시작점"
+                        guide="권장 5~10%"
                         rate={person.cultureRate}
                         net={calc.net}
                         onChange={(cultureRate) => updatePerson(index as 0 | 1, { cultureRate })}
                       />
                       <RateField
                         label="여행 적립"
-                        guide="5% 시작점"
+                        guide="권장 5%"
                         rate={person.travelRate}
                         net={calc.net}
                         onChange={(travelRate) => updatePerson(index as 0 | 1, { travelRate })}
                       />
+                      <RateField
+                        label="현금·용돈"
+                        guide="권장 10%"
+                        rate={person.cashRate}
+                        net={calc.net}
+                        onChange={(cashRate) => updatePerson(index as 0 | 1, { cashRate })}
+                      />
                     </div>
                     <div className="allocation-total">
                       <span>정한 비율</span>
-                      <strong>{person.investmentRate + person.foodRate + person.cultureRate + person.travelRate}%</strong>
-                      <small>남은 비율 {100 - person.investmentRate - person.foodRate - person.cultureRate - person.travelRate}% · {signedWon(result.personal[index].remaining)}</small>
+                      <strong>{Math.round(result.personal[index].investmentRate + person.foodRate + person.cultureRate + person.travelRate + person.cashRate)}%</strong>
+                      <small>남은 금액 {signedWon(result.personal[index].remaining)} · 공동 주거비에 쓰거나 추가 저축할 수 있어요</small>
                     </div>
                   </article>
                 );
@@ -433,13 +480,11 @@ export default function Home() {
               <MoneyField label="월세" value={state.plan.monthlyRent} onChange={(monthlyRent) => updatePlan({ monthlyRent })} />
               <MoneyField label="기타 대출 상환" value={state.plan.otherLoan} onChange={(otherLoan) => updatePlan({ otherLoan })} />
               <MoneyField label="월 청약 저축" value={state.plan.housingSubscription} onChange={(housingSubscription) => updatePlan({ housingSubscription })} />
-              <label className="field">
-                <span>예상 연 수익률<small>조절 가능</small></span>
-                <div className="percent-field">
-                  <input type="range" min="0" max="10" step="0.5" value={state.plan.annualReturnRate} onChange={(e) => updatePlan({ annualReturnRate: Number(e.target.value) })} />
-                  <b>{state.plan.annualReturnRate}%</b>
-                </div>
-              </label>
+              <MoneyField label="전기요금" value={state.plan.electricity} onChange={(electricity) => updatePlan({ electricity })} />
+              <MoneyField label="가스·난방비" value={state.plan.gas} onChange={(gas) => updatePlan({ gas })} />
+              <MoneyField label="수도요금" value={state.plan.water} onChange={(water) => updatePlan({ water })} />
+              <MoneyField label="인터넷·공용 통신" value={state.plan.telecom} onChange={(telecom) => updatePlan({ telecom })} />
+              <MoneyField label="관리비" value={state.plan.managementFee} onChange={(managementFee) => updatePlan({ managementFee })} />
             </div>
             <div className="housing-summary">
               <div><span>매달 공통 주거 관련</span><strong>{won(result.housingOutflow)}</strong></div>
@@ -447,7 +492,7 @@ export default function Home() {
             </div>
             <div className="projection">
               <div className="projection-head">
-                <div><strong>이 속도로 모으면</strong><span>현재 자산 + 매달 투자·적금·청약, 연 {state.plan.annualReturnRate}% 가정</span></div>
+                <div><strong>이 속도로 모으면</strong><span>수익률을 가정하지 않고 현재 자산 + 매달 투자·적금·청약만 계산</span></div>
                 <b>월 {won(result.monthlyAssetContribution)} 적립</b>
               </div>
               <div className="projection-grid">
@@ -493,7 +538,7 @@ export default function Home() {
 
           <div className="flow">
             <p><span>투자·적금·청약</span><b>{won(result.monthlyAssetContribution)}</b></p>
-            <p><span>식생활·문화·여행</span><b>-{won(result.monthlySpending - result.housingExpense)}</b></p>
+            <p><span>식생활·문화·여행·용돈</span><b>-{won(result.monthlySpending - result.housingExpense)}</b></p>
             <p><span>공통 주거·대출</span><b>-{won(result.housingExpense)}</b></p>
           </div>
 
@@ -507,7 +552,7 @@ export default function Home() {
             <span>각자의 실수령액 100% 계획</span>
             {[0, 1].map((index) => (
               <p key={index}>
-                <span>{state.people[index].name} <small>{state.people[index].investmentRate + state.people[index].foodRate + state.people[index].cultureRate + state.people[index].travelRate}% 사용</small></span>
+                <span>{state.people[index].name} <small>{Math.round(result.personal[index].investmentRate + state.people[index].foodRate + state.people[index].cultureRate + state.people[index].travelRate + state.people[index].cashRate)}% 계획</small></span>
                 <b>{won(result.personal[index].remaining)} 남음</b>
               </p>
             ))}
