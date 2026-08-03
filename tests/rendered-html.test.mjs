@@ -22,9 +22,9 @@ test("신혼부부 자산 플래너 첫 화면을 서버 렌더링한다", async
   assert.match(html, /<html lang="ko">/i);
   assert.match(html, /<title>둘이자산 \| 신혼부부 자산형성 플래너<\/title>/i);
   assert.match(html, /우리 둘의 월급과 예산/);
-  assert.match(html, /월 투자·적금/);
-  assert.match(html, /연간 여행비/);
-  assert.match(html, /우리 자산 목표/);
-  assert.match(html, /이번 달 결론/);
+  assert.match(html, /실수령액 100% 나누기/);
+  assert.match(html, /투자·적금/);
+  assert.match(html, /둘이 함께 내는 주거비/);
+  assert.match(html, /이 속도로 모으면/);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton/i);
 });
