@@ -206,7 +206,7 @@ function MoneyField({
   );
 }
 
-function RateField({
+function AllocationField({
   label,
   rate,
   net,
@@ -219,24 +219,22 @@ function RateField({
   onChange: (value: number) => void;
   guide: string;
 }) {
-  const amount = net * (rate / 100);
+  const safeRate = Number.isFinite(rate) ? rate : 0;
+  const amount = net * (safeRate / 100);
   return (
-    <label className="rate-field">
+    <div className="rate-field">
       <span><strong>{label}</strong><small>{guide}</small></span>
-      <div className="rate-output">
-        <b>{rate}%</b>
-        <strong>{won(amount)}</strong>
+      <div className="dual-inputs">
+        <label>
+          <span>금액</span>
+          <div><input inputMode="numeric" value={Math.round(amount).toLocaleString("ko-KR")} onChange={(event) => onChange(net > 0 ? Math.min(100, (parseWon(event.target.value) / net) * 100) : 0)} /><b>원</b></div>
+        </label>
+        <label>
+          <span>비율</span>
+          <div><input inputMode="decimal" value={Number(safeRate.toFixed(1))} onChange={(event) => onChange(Math.min(100, Math.max(0, Number(event.target.value) || 0)))} /><b>%</b></div>
+        </label>
       </div>
-      <input
-        type="range"
-        min="0"
-        max="100"
-        step="1"
-        value={rate}
-        onChange={(event) => onChange(Number(event.target.value))}
-        aria-label={`${label} 비율`}
-      />
-    </label>
+    </div>
   );
 }
 
@@ -348,6 +346,27 @@ export default function Home() {
   const updatePlan = (patch: Partial<Plan>) =>
     setState((current) => ({ ...current, plan: { ...current.plan, ...patch } }));
 
+  const updateInvestmentRate = (index: 0 | 1, rate: number) => {
+    const person = state.people[index];
+    const target = salary[index].net * (Math.min(100, Math.max(0, rate)) / 100);
+    const current =
+      person.monthlyDeposit +
+      person.monthlyInvest +
+      person.monthlyPension +
+      person.monthlyEmergency;
+    if (current <= 0) {
+      updatePerson(index, { monthlyDeposit: Math.round(target) });
+      return;
+    }
+    const scale = target / current;
+    updatePerson(index, {
+      monthlyDeposit: Math.round(person.monthlyDeposit * scale),
+      monthlyInvest: Math.round(person.monthlyInvest * scale),
+      monthlyPension: Math.round(person.monthlyPension * scale),
+      monthlyEmergency: Math.round(person.monthlyEmergency * scale),
+    });
+  };
+
   return (
     <main>
       <header className="topbar">
@@ -406,11 +425,16 @@ export default function Home() {
                     <div className="personal-divider"><span>실수령액 100% 나누기</span></div>
                     <div className="rate-list">
                       <div className="investment-group">
-                        <button className="investment-toggle" onClick={() => setOpenInvestment(openInvestment === index ? null : index as 0 | 1)}>
-                          <span><strong>투자·적금</strong><small>권장 30~40%</small></span>
-                          <span><b>{result.personal[index].investmentRate.toFixed(1)}%</b><strong>{won(result.personal[index].investment)}</strong></span>
-                          <i>{openInvestment === index ? "접기 −" : "세부 입력 +"}</i>
-                        </button>
+                        <div className="investment-toggle">
+                          <button onClick={() => setOpenInvestment(openInvestment === index ? null : index as 0 | 1)}>
+                            <strong>투자·적금</strong><small>권장 30~40% · {openInvestment === index ? "접기 −" : "세부 입력 +"}</small>
+                          </button>
+                          <label>
+                            <span>합계 비율</span>
+                            <div><input inputMode="decimal" value={Number(result.personal[index].investmentRate.toFixed(1))} onChange={(event) => updateInvestmentRate(index as 0 | 1, Number(event.target.value) || 0)} /><b>%</b></div>
+                          </label>
+                          <p>{won(result.personal[index].investment)}</p>
+                        </div>
                         {openInvestment === index && (
                           <div className="investment-details">
                             <MoneyField label="예금·적금" value={person.monthlyDeposit} onChange={(monthlyDeposit) => updatePerson(index as 0 | 1, { monthlyDeposit })} />
@@ -420,28 +444,28 @@ export default function Home() {
                           </div>
                         )}
                       </div>
-                      <RateField
+                      <AllocationField
                         label="식생활비"
                         guide="권장 10~15%"
                         rate={person.foodRate}
                         net={calc.net}
                         onChange={(foodRate) => updatePerson(index as 0 | 1, { foodRate })}
                       />
-                      <RateField
+                      <AllocationField
                         label="문화·레저"
                         guide="권장 5~10%"
                         rate={person.cultureRate}
                         net={calc.net}
                         onChange={(cultureRate) => updatePerson(index as 0 | 1, { cultureRate })}
                       />
-                      <RateField
+                      <AllocationField
                         label="여행 적립"
                         guide="권장 5%"
                         rate={person.travelRate}
                         net={calc.net}
                         onChange={(travelRate) => updatePerson(index as 0 | 1, { travelRate })}
                       />
-                      <RateField
+                      <AllocationField
                         label="현금·용돈"
                         guide="권장 10%"
                         rate={person.cashRate}
@@ -449,23 +473,20 @@ export default function Home() {
                         onChange={(cashRate) => updatePerson(index as 0 | 1, { cashRate })}
                       />
                     </div>
-                    <div className="allocation-total">
+                    <div className={`allocation-total ${result.personal[index].remaining < 0 ? "over" : ""}`}>
                       <span>정한 비율</span>
                       <strong>{Math.round(result.personal[index].investmentRate + person.foodRate + person.cultureRate + person.travelRate + person.cashRate)}%</strong>
-                      <small>남은 금액 {signedWon(result.personal[index].remaining)} · 공동 주거비에 쓰거나 추가 저축할 수 있어요</small>
+                      <small>{result.personal[index].remaining < 0 ? `실수령액보다 ${won(Math.abs(result.personal[index].remaining))} 많아요. 비율을 줄여주세요.` : `남은 금액 ${won(result.personal[index].remaining)} · 공동 주거비에 쓰거나 추가 저축할 수 있어요`}</small>
                     </div>
                   </article>
                 );
               })}
             </div>
 
-            <div className="income-share">
-              <div className="share-labels">
-                <p><strong>{state.people[0].name} {Math.round(result.shares[0] * 100)}%</strong><span>{won(salary[0].net)}</span></p>
-                <p><strong>{state.people[1].name} {Math.round(result.shares[1] * 100)}%</strong><span>{won(salary[1].net)}</span></p>
-              </div>
-              <div className="share-bar"><span style={{ width: `${result.shares[0] * 100}%` }} /></div>
-              <small>합산 실수령액 {won(result.totalNet)}을 기준으로 한 소득 비중이에요.</small>
+            <div className="couple-totals">
+              <div><span>둘의 월 실수령 합계</span><strong>{won(result.totalNet)}</strong></div>
+              <div><span>1번에서 계획한 합계</span><strong>{won(result.personal[0].total + result.personal[1].total)}</strong></div>
+              <div className={(result.personal[0].remaining + result.personal[1].remaining) < 0 ? "negative" : ""}><span>1번 후 남은 합계</span><strong>{signedWon(result.personal[0].remaining + result.personal[1].remaining)}</strong></div>
             </div>
           </section>
 
