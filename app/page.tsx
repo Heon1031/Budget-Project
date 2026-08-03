@@ -7,6 +7,11 @@ type Person = {
   annualGross: number;
   monthlyNonTaxable: number;
   actualNet: number;
+  monthlyInvestment: number;
+  monthlyFood: number;
+  monthlyHousing: number;
+  monthlyCulture: number;
+  annualTravel: number;
 };
 
 type Plan = {
@@ -40,8 +45,28 @@ const RULES = {
 
 const initialState: AppState = {
   people: [
-    { name: "나", annualGross: 52_000_000, monthlyNonTaxable: 200_000, actualNet: 0 },
-    { name: "배우자", annualGross: 40_000_000, monthlyNonTaxable: 200_000, actualNet: 0 },
+    {
+      name: "나",
+      annualGross: 52_000_000,
+      monthlyNonTaxable: 200_000,
+      actualNet: 0,
+      monthlyInvestment: 1_100_000,
+      monthlyFood: 500_000,
+      monthlyHousing: 700_000,
+      monthlyCulture: 200_000,
+      annualTravel: 2_600_000,
+    },
+    {
+      name: "배우자",
+      annualGross: 40_000_000,
+      monthlyNonTaxable: 200_000,
+      actualNet: 0,
+      monthlyInvestment: 900_000,
+      monthlyFood: 400_000,
+      monthlyHousing: 600_000,
+      monthlyCulture: 160_000,
+      annualTravel: 2_000_000,
+    },
   ],
   plan: {
     currentAssets: 30_000_000,
@@ -57,6 +82,8 @@ const initialState: AppState = {
 };
 
 const won = (value: number) => `${Math.round(Math.max(0, value)).toLocaleString("ko-KR")}원`;
+const signedWon = (value: number) =>
+  `${value < 0 ? "-" : ""}${Math.round(Math.abs(value)).toLocaleString("ko-KR")}원`;
 const manwon = (value: number) => `${Math.round(Math.max(0, value) / 10_000).toLocaleString("ko-KR")}만원`;
 const parseWon = (value: string) => Number(value.replace(/[^\d]/g, "")) || 0;
 const round10 = (value: number) => Math.floor(value / 10) * 10;
@@ -208,6 +235,16 @@ export default function Home() {
     const monthsAtCurrentPace = assetGap > 0 && requiredAssetMonthly + extraInvestment > 0
       ? Math.ceil(assetGap / (requiredAssetMonthly + extraInvestment))
       : 0;
+    const personalBudgets = state.people.map((person) =>
+      (person.monthlyInvestment || 0) +
+      (person.monthlyFood || 0) +
+      (person.monthlyHousing || 0) +
+      (person.monthlyCulture || 0) +
+      (person.annualTravel || 0) / 12,
+    ) as [number, number];
+    const personalRemaining = personalBudgets.map((budget, index) =>
+      salary[index].net - budget,
+    ) as [number, number];
     return {
       totalNet,
       shares,
@@ -220,8 +257,10 @@ export default function Home() {
       extraInvestment,
       shortfall,
       monthsAtCurrentPace,
+      personalBudgets,
+      personalRemaining,
     };
-  }, [salary, state.plan]);
+  }, [salary, state.plan, state.people]);
 
   const updatePerson = (index: 0 | 1, patch: Partial<Person>) => {
     setState((current) => {
@@ -242,17 +281,11 @@ export default function Home() {
         <button onClick={() => setState(initialState)}>예시값으로 초기화</button>
       </header>
 
-      <section className="hero" id="top">
-        <span className="eyebrow">NEWLYWED ASSET PLANNER</span>
-        <h1>월급을 나누는 계산에서,<br /><em>우리 자산을 키우는 계획으로</em></h1>
-        <p>두 사람의 실제 세후소득을 계산하고 목표자산, 생활비, 용돈, 배움과 투자까지 이번 달에 가능한 선택을 보여드려요.</p>
-      </section>
-
-      <div className="layout">
+      <div className="layout" id="top">
         <div className="content">
           <section className="card">
             <div className="title-row">
-              <div><span className="step">01</span><div><h2>두 사람의 실수령액</h2><p>직장인·월급제·2026년 기준</p></div></div>
+              <div><span className="step">01</span><div><h2>우리 둘의 월급과 예산</h2><p>왼쪽은 나, 오른쪽은 배우자가 각자 입력해요</p></div></div>
               <span className="official-badge">공식 요율 반영</span>
             </div>
 
@@ -306,6 +339,41 @@ export default function Home() {
                         <p><span>예상 지방소득세</span><b>-{won(calc.localIncomeTax)}</b></p>
                       </div>
                     )}
+                    <div className="personal-divider"><span>각자 쓰는 돈</span></div>
+                    <MoneyField
+                      label="월 투자·적금"
+                      hint={`권장 30%↑ · 현재 ${calc.net ? Math.round(((person.monthlyInvestment || 0) / calc.net) * 100) : 0}%`}
+                      value={person.monthlyInvestment || 0}
+                      onChange={(monthlyInvestment) => updatePerson(index as 0 | 1, { monthlyInvestment })}
+                    />
+                    <MoneyField
+                      label="월 식생활비"
+                      hint={`권장 15% 이내 · 현재 ${calc.net ? Math.round(((person.monthlyFood || 0) / calc.net) * 100) : 0}%`}
+                      value={person.monthlyFood || 0}
+                      onChange={(monthlyFood) => updatePerson(index as 0 | 1, { monthlyFood })}
+                    />
+                    <MoneyField
+                      label="월 주거비"
+                      hint={calc.net ? `실수령의 ${Math.round(((person.monthlyHousing || 0) / calc.net) * 100)}%` : "직접 입력"}
+                      value={person.monthlyHousing || 0}
+                      onChange={(monthlyHousing) => updatePerson(index as 0 | 1, { monthlyHousing })}
+                    />
+                    <MoneyField
+                      label="월 문화·레저비"
+                      hint={`연봉 5%÷12 기준 ${manwon(person.annualGross * 0.05 / 12)}`}
+                      value={person.monthlyCulture || 0}
+                      onChange={(monthlyCulture) => updatePerson(index as 0 | 1, { monthlyCulture })}
+                    />
+                    <MoneyField
+                      label="연간 여행비"
+                      hint={`연봉 5% 기준 ${manwon(person.annualGross * 0.05)}`}
+                      value={person.annualTravel || 0}
+                      onChange={(annualTravel) => updatePerson(index as 0 | 1, { annualTravel })}
+                    />
+                    <div className={`personal-balance ${result.personalRemaining[index] < 0 ? "negative" : ""}`}>
+                      <span>계획하고 남는 월 금액</span>
+                      <strong>{signedWon(result.personalRemaining[index])}</strong>
+                    </div>
                   </article>
                 );
               })}

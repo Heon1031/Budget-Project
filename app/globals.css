@@ -24,12 +24,7 @@ button { color: inherit; cursor: pointer; }
 .brand-mark { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 10px 10px 10px 3px; background: var(--green); color: white; font-size: 13px; }
 .save-dot { margin-left: auto; color: #599072; font-size: 11px; }
 .topbar button { border: 0; background: none; color: var(--muted); font-size: 11px; padding: 10px; }
-.hero { max-width: 1220px; margin: auto; padding: 64px 22px 44px; }
-.eyebrow { color: var(--green-2); font-size: 10px; letter-spacing: .2em; font-weight: 900; }
-h1 { margin: 15px 0 18px; font-family: Georgia, "Batang", serif; font-size: clamp(39px, 5vw, 62px); line-height: 1.12; letter-spacing: -.055em; font-weight: 500; }
-h1 em { color: var(--green-2); font-weight: inherit; }
-.hero p { max-width: 700px; margin: 0; color: var(--muted); font-size: 16px; line-height: 1.7; }
-.layout { max-width: 1220px; margin: auto; padding: 0 22px 75px; display: grid; grid-template-columns: minmax(0, 1.58fr) minmax(335px, .82fr); gap: 22px; align-items: start; }
+.layout { max-width: 1220px; margin: auto; padding: 24px 22px 75px; display: grid; grid-template-columns: 1fr; gap: 22px; align-items: start; }
 .content { display: grid; gap: 18px; }
 .card { padding: 28px; border-radius: 20px; background: var(--paper); border: 1px solid rgba(25,54,47,.1); box-shadow: var(--shadow); }
 .title-row { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 22px; }
@@ -67,6 +62,13 @@ h1 em { color: var(--green-2); font-weight: inherit; }
 .deductions { margin-top: 8px; padding: 10px; border-radius: 9px; background: #f8f7f2; }
 .deductions p { display: flex; justify-content: space-between; margin: 5px 0; color: var(--muted); font-size: 9px; }
 .deductions b { color: #765c56; }
+.personal-divider { display: flex; align-items: center; gap: 8px; margin: 18px 0 8px; color: var(--green); font-size: 9px; font-weight: 900; }
+.personal-divider::before, .personal-divider::after { content: ""; height: 1px; background: var(--line); flex: 1; }
+.personal-balance { margin: 16px -18px -18px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; background: #e7f2ec; color: var(--green); border-radius: 0 0 12px 12px; }
+.person-2 .personal-balance { background: #eee9f4; color: var(--purple); }
+.personal-balance span { font-size: 9px; }
+.personal-balance strong { font-family: Georgia, serif; font-size: 18px; }
+.personal-balance.negative { background: #f8e4df; color: #9b4937; }
 .income-share { margin-top: 19px; padding: 16px; border-radius: 13px; background: #f5f4ee; }
 .share-labels { display: flex; justify-content: space-between; }
 .share-labels p { display: grid; margin: 0; font-size: 11px; }
@@ -91,7 +93,7 @@ h1 em { color: var(--green-2); font-weight: inherit; }
 .sources-card p { margin: 2px 0 0; color: var(--muted); font-size: 8px; }
 .source-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 13px; }
 .source-links a { color: var(--green); font-size: 8px; text-decoration: none; padding: 6px 8px; border-radius: 6px; background: white; border: 1px solid var(--line); }
-.result-panel { position: sticky; top: 88px; padding: 30px; border-radius: 21px; background: var(--green); color: white; box-shadow: 0 22px 60px rgba(18,71,63,.22); overflow: hidden; }
+.result-panel { position: static; padding: 30px; border-radius: 21px; background: var(--green); color: white; box-shadow: 0 22px 60px rgba(18,71,63,.22); overflow: hidden; }
 .result-panel::before { content: ""; position: absolute; width: 230px; height: 230px; right: -125px; top: -95px; border-radius: 50%; border: 1px solid rgba(255,255,255,.08); }
 .panel-kicker { color: #9ec7bb; font-size: 8px; letter-spacing: .17em; font-weight: 800; }
 .result-panel h2 { margin: 5px 0 23px; font-family: Georgia, "Batang", serif; font-weight: 500; font-size: 24px; }
@@ -125,16 +127,12 @@ footer { max-width: 1220px; margin: 0 auto; padding: 28px 22px 40px; display: fl
 footer p { margin: 0; }
 @media (max-width: 900px) {
   .layout { grid-template-columns: 1fr; }
-  .result-panel { position: static; grid-row: 1; }
 }
 @media (max-width: 620px) {
   .topbar { padding: 0 15px; }
   .save-dot { font-size: 0; }
   .save-dot::first-letter { font-size: 11px; }
-  .hero { padding: 45px 17px 30px; }
-  h1 { font-size: 38px; }
-  .hero p { font-size: 13px; }
-  .layout { padding: 0 11px 45px; }
+  .layout { padding: 14px 11px 45px; }
   .card { padding: 21px 17px; border-radius: 16px; }
   .marriage-note { align-items: flex-start; flex-direction: column; }
   .salary-grid, .goal-grid, .choice-grid { grid-template-columns: 1fr; }
