@@ -36,7 +36,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export const viewport: Viewport = {
-  themeColor: "#185f54",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f3f4f1" },
+    { media: "(prefers-color-scheme: dark)", color: "#0e1412" },
+  ],
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -48,6 +51,11 @@ const registerServiceWorker = `if("serviceWorker"in navigator&&location.hostname
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ko">
+      <head>
+        {/* Pretendard(OFL): 화면에 나온 글자가 든 조각만 받아 온다. public 파일이라 묶음(bundle)에 넣지 않는다. */}
+        {/* eslint-disable-next-line @next/next/no-css-tags */}
+        <link rel="stylesheet" href="/fonts/pretendard/pretendardvariable-dynamic-subset.css" />
+      </head>
       <body>
         {children}
         <script dangerouslySetInnerHTML={{ __html: registerServiceWorker }} />
