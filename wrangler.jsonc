@@ -4,12 +4,15 @@
   "main": "./worker/index.ts",
   "compatibility_date": "2026-05-15",
   "compatibility_flags": ["nodejs_compat"],
+  // 공개 주소: https://duri-budget.nestwork.workers.dev. 버전별 미리보기 주소는 열지 않는다.
+  "workers_dev": true,
+  "preview_urls": false,
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "duri-budget",
-      // `wrangler d1 create duri-budget`가 알려 주는 값으로 바꾼다. 로컬 개발은 이 값과 상관없다.
-      "database_id": "00000000-0000-4000-8000-000000000000",
+      // Cloudflare D1 duri-budget (APAC, 2026-11-03 만듦). 로컬 개발은 .wrangler 안의 복사본을 쓴다.
+      "database_id": "12d52e06-9100-4c4a-9567-f117b33e1612",
       "migrations_dir": "migrations"
     }
   ],

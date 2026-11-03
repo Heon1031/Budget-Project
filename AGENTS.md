@@ -17,4 +17,5 @@
 ## 시험
 - `npm test` (빌드 + 화면 렌더링 시험), `npx tsc --noEmit`, `npm run lint`, `npm run check:security`
 - 로컬 실행: `npm run db:local` 후 `npm run dev`
+- 배포 주소: https://duri-budget.nestwork.workers.dev (`npm run deploy`, 표가 바뀌면 먼저 `npm run db:remote`)
 - Claude 훅(`.claude/settings.json`): 코드 수정 뒤 타입 · 보안 점검, 커밋 전 전체 시험을 자동으로 돌린다.
