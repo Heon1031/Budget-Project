@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { ConnectPanel } from "./connect-panel";
+import { MoneyField, RateInput, manwon, parseWon, signedWon, won } from "./fields";
+import { forgetCache, useSharedRecords } from "./lib/sync";
+import { clearVault, loadVault, type Vault } from "./lib/vault";
+import { MonthBoard, type PromiseAmounts } from "./month-board";
 
 type Person = {
   name: string;
@@ -123,11 +128,6 @@ function restoreState(saved: unknown): AppState {
   };
 }
 
-const won = (value: number) => `${Math.round(Math.max(0, value)).toLocaleString("ko-KR")}원`;
-const signedWon = (value: number) =>
-  `${value < 0 ? "-" : ""}${Math.round(Math.abs(value)).toLocaleString("ko-KR")}원`;
-const manwon = (value: number) => `${Math.round(Math.max(0, value) / 10_000).toLocaleString("ko-KR")}만원`;
-const parseWon = (value: string) => Number(value.replace(/[^\d]/g, "")) || 0;
 const round10 = (value: number) => Math.floor(value / 10) * 10;
 
 function earnedIncomeDeduction(gross: number) {
@@ -206,51 +206,6 @@ function calculateSalary(person: Person) {
   };
 }
 
-function MoneyField({
-  label,
-  value,
-  onChange,
-  hint,
-}: {
-  label: string;
-  value: number;
-  onChange: (value: number) => void;
-  hint?: string;
-}) {
-  return (
-    <label className="field">
-      <span>{label}{hint && <small>{hint}</small>}</span>
-      <div className="money-field">
-        <input
-          inputMode="numeric"
-          value={value ? value.toLocaleString("ko-KR") : ""}
-          onChange={(event) => onChange(parseWon(event.target.value))}
-          placeholder="0"
-        />
-        <b>원</b>
-      </div>
-    </label>
-  );
-}
-
-// 입력 중에는 친 글자를 그대로 보여 줘야 「12.」처럼 소수점을 이어서 칠 수 있다.
-function RateInput({ value, onChange }: { value: number; onChange: (value: number) => void }) {
-  const [draft, setDraft] = useState<string | null>(null);
-  const safeValue = Number.isFinite(value) ? value : 0;
-  return (
-    <input
-      inputMode="decimal"
-      value={draft ?? String(Number(safeValue.toFixed(1)))}
-      onChange={(event) => {
-        const text = event.target.value.replace(/[^\d.]/g, "");
-        setDraft(text);
-        onChange(Number(text) || 0);
-      }}
-      onBlur={() => setDraft(null)}
-    />
-  );
-}
-
 function AllocationField({
   label,
   rate,
@@ -288,22 +243,70 @@ export default function Home() {
   const [hydrated, setHydrated] = useState(false);
   const [openBreakdown, setOpenBreakdown] = useState<0 | 1 | null>(null);
   const [openInvestment, setOpenInvestment] = useState<0 | 1 | null>(0);
+  const [vault, setVault] = useState<Vault | null>(null);
+  const [tab, setTab] = useState<"month" | "plan" | "connect">("plan");
+  const shared = useSharedRecords(vault);
+  const { write: writeShared, loaded: sharedLoaded, pulled: sharedPulled } = shared;
+  // 서버와 마지막으로 맞춘 계획(JSON). 같은 내용을 다시 보내거나, 보낸 걸 다시 덮어쓰지 않으려고 둔다.
+  const [syncedPlanJson, setSyncedPlanJson] = useState("");
+  const [seenRemotePlan, setSeenRemotePlan] = useState<unknown>(undefined);
 
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        setState(restoreState(JSON.parse(saved)));
-      } catch {
-        localStorage.removeItem(STORAGE_KEY);
+    void loadVault().then((stored) => {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          setState(restoreState(JSON.parse(saved)));
+        } catch {
+          localStorage.removeItem(STORAGE_KEY);
+        }
       }
-    }
-    setHydrated(true);
+      if (stored) {
+        setVault(stored);
+        setTab("month");
+      }
+      setHydrated(true);
+    });
   }, []);
 
+  // 연결 전에는 이 폰에만 저장한다. 연결 뒤에는 암호화된 기록만 남기고 평문 저장본은 지운다.
   useEffect(() => {
-    if (hydrated) localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [state, hydrated]);
+    if (!hydrated) return;
+    if (vault) localStorage.removeItem(STORAGE_KEY);
+    else localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }, [state, hydrated, vault]);
+
+  const remotePlan = shared.records.get("plan");
+  if (remotePlan !== seenRemotePlan) {
+    setSeenRemotePlan(remotePlan);
+    const json = remotePlan ? JSON.stringify(remotePlan) : "";
+    if (remotePlan && json !== syncedPlanJson) {
+      setSyncedPlanJson(json);
+      setState(restoreState(remotePlan));
+    }
+  }
+
+  // 처음 연결한 폰은 서버 계획을 먼저 받아 본 뒤에야 내 계획을 보낸다(상대 계획을 덮어쓰지 않게).
+  const canSendPlan = Boolean(vault) && sharedLoaded && (sharedPulled || remotePlan !== undefined);
+  useEffect(() => {
+    if (!canSendPlan) return;
+    const json = JSON.stringify(state);
+    if (json === syncedPlanJson) return;
+    const timer = setTimeout(() => {
+      setSyncedPlanJson(json);
+      void writeShared("plan", state);
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [canSendPlan, state, syncedPlanJson, writeShared]);
+
+  const disconnect = async () => {
+    if (vault) forgetCache(vault.householdId);
+    await clearVault();
+    setVault(null);
+    setSyncedPlanJson("");
+    setState(initialState);
+    setTab("plan");
+  };
 
   const salary = useMemo(
     () => state.people.map(calculateSalary) as [ReturnType<typeof calculateSalary>, ReturnType<typeof calculateSalary>],
@@ -380,6 +383,23 @@ export default function Home() {
     };
   }, [salary, state.plan, state.people]);
 
+  // 「계획」 탭 숫자를 이번 달 약속 칸으로 옮긴 값.
+  const suggestion = useMemo<PromiseAmounts>(() => {
+    const [a, b] = state.people;
+    return {
+      saving: Math.round(a.monthlyDeposit + a.monthlyEmergency + b.monthlyDeposit + b.monthlyEmergency + state.plan.housingSubscription),
+      invest: Math.round(a.monthlyInvest + a.monthlyPension + b.monthlyInvest + b.monthlyPension),
+      fixed: Math.round(result.housingExpense),
+      living: Math.round(
+        result.personal[0].food + result.personal[0].culture + result.personal[0].travel +
+        result.personal[1].food + result.personal[1].culture + result.personal[1].travel,
+      ),
+      allowance: [Math.round(result.personal[0].cash), Math.round(result.personal[1].cash)],
+      threshold: 100_000,
+    };
+  }, [result, state.people, state.plan.housingSubscription]);
+  const names: [string, string] = [state.people[0].name || "A", state.people[1].name || "B"];
+
   const updatePerson = (index: 0 | 1, patch: Partial<Person>) => {
     setState((current) => {
       const people = [...current.people] as [Person, Person];
@@ -416,10 +436,56 @@ export default function Home() {
     <main>
       <header className="topbar">
         <a className="brand" href="#top"><span className="brand-mark">둘</span><span>둘이자산</span></a>
-        <span className="save-dot">● 이 기기에 자동 저장</span>
-        <button onClick={() => setState(initialState)}>예시값으로 초기화</button>
+        <span className="save-dot">{vault ? "● 둘이 함께 저장 · 암호화" : "● 이 폰에만 저장"}</span>
+        {tab === "plan" && (
+          <button onClick={() => {
+            if (confirm(vault ? "계획을 예시값으로 바꿀까요? 상대 폰의 계획도 함께 바뀌어요." : "계획을 예시값으로 바꿀까요?")) setState(initialState);
+          }}>예시값으로 초기화</button>
+        )}
       </header>
 
+      {tab === "month" && (
+        <div className="layout">
+          {vault && sharedLoaded ? (
+            <MonthBoard
+              records={shared.records}
+              write={writeShared}
+              me={vault.me}
+              names={names}
+              suggestion={suggestion}
+              totalNet={result.totalNet}
+            />
+          ) : vault ? (
+            <section className="card"><p className="muted">기록을 여는 중…</p></section>
+          ) : (
+            <section className="card connect-card">
+              <h2>먼저 두 폰을 연결해요</h2>
+              <p className="muted">이번 달 약속과 생활비 기록은 둘이 함께 봐야 해서, 연결한 뒤에 쓸 수 있어요.</p>
+              <button className="primary" onClick={() => setTab("connect")}>연결하러 가기</button>
+            </section>
+          )}
+        </div>
+      )}
+
+      {tab === "connect" && (
+        <div className="layout">
+          <ConnectPanel
+            vault={vault}
+            names={names}
+            status={shared.status}
+            error={shared.error}
+            pendingCount={shared.pendingCount}
+            onConnected={(connected) => {
+              setVault(connected);
+              setTab("month");
+            }}
+            onDisconnect={() => void disconnect()}
+            onSync={() => void shared.syncNow()}
+          />
+        </div>
+      )}
+
+      {tab === "plan" && (
       <div className="layout" id="top">
         <div className="content">
           <section className="card">
@@ -636,11 +702,18 @@ export default function Home() {
           </div>
         </aside>
       </div>
+      )}
 
       <footer>
         <span>둘이자산 · 신혼부부 자산형성 플래너</span>
         <p>본 결과는 참고용 추정이며 급여명세서·연말정산·금융상담을 대체하지 않습니다.</p>
       </footer>
+
+      <nav className="tabbar" aria-label="화면 바꾸기">
+        <button className={tab === "month" ? "active" : ""} onClick={() => setTab("month")}><span>✓</span>이번 달</button>
+        <button className={tab === "plan" ? "active" : ""} onClick={() => setTab("plan")}><span>₩</span>계획</button>
+        <button className={tab === "connect" ? "active" : ""} onClick={() => setTab("connect")}><span>⇄</span>연결</button>
+      </nav>
     </main>
   );
 }

@@ -1,0 +1,17 @@
+{
+  // 둘이자산: 앱 화면과 동기화 서버를 한 Worker에서 내보낸다.
+  "name": "duri-budget",
+  "main": "./worker/index.ts",
+  "compatibility_date": "2026-05-15",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "duri-budget",
+      // `wrangler d1 create duri-budget`가 알려 주는 값으로 바꾼다. 로컬 개발은 이 값과 상관없다.
+      "database_id": "00000000-0000-4000-8000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "observability": { "enabled": true }
+}

@@ -203,3 +203,72 @@ footer p { margin: 0; }
   .result-panel { border-radius: 16px; }
   footer { margin: 0 16px; padding-left: 0; padding-right: 0; flex-direction: column; gap: 7px; text-align: center; }
 }
+
+/* 이번 달 · 연결 탭 */
+main { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+.muted { color: var(--muted); font-size: 12px; line-height: 1.6; }
+.muted.small { font-size: 11px; }
+.plain-input { width: 100%; border: 1px solid var(--line); border-radius: 9px; background: #faf9f5; padding: 12px 10px; color: var(--ink); font-weight: 700; font-size: 16px; outline: 0; }
+.plain-input:focus { border-color: var(--green-2); outline: 3px solid rgba(58,128,117,.12); }
+.money-field input { font-size: 16px; }
+button.primary { width: 100%; margin-top: 14px; padding: 14px; border: 0; border-radius: 12px; background: var(--green); color: white; font-weight: 900; font-size: 14px; }
+button.primary:disabled { background: #b9c7c2; cursor: default; }
+button.danger { margin-top: 18px; padding: 12px; width: 100%; border: 1px solid #e8c7bf; border-radius: 12px; background: white; color: #9b4937; font-weight: 800; }
+.text-button { margin-top: 12px; border: 0; background: none; color: var(--green); font-size: 12px; font-weight: 800; text-decoration: underline; padding: 4px 0; }
+.toggle-group.wide { display: grid; grid-template-columns: 1fr 1fr; margin-top: 12px; }
+.toggle-group.wide button { font-size: 12px; padding: 10px; }
+.month-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.month-nav h2 { margin: 0; font-family: Georgia, "Batang", serif; font-size: 24px; }
+.month-nav button { width: 40px; height: 40px; border: 1px solid var(--line); border-radius: 12px; background: white; font-size: 20px; }
+.agree-status { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.agree-status span { padding: 6px 10px; border-radius: 999px; background: #f6ead9; color: #86501f; font-size: 12px; font-weight: 800; }
+.agree-status.done span { background: #e4f1e8; color: #397451; }
+.promise-list p { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 0; padding: 11px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.promise-list small { color: var(--muted); font-size: 11px; margin-left: 4px; }
+.promise-list b { font-size: 15px; }
+.promise-list .threshold b { color: var(--amber); font-size: 13px; }
+.promise-edit .field:first-child { margin-top: 0; }
+.promise-sum { margin-top: 14px; padding: 12px; border-radius: 11px; background: #edf5f1; display: grid; gap: 3px; color: var(--green); }
+.promise-sum span { font-size: 11px; color: var(--muted); }
+.promise-sum b { font-size: 14px; }
+.promise-sum.over { background: #f8e3de; color: #994635; }
+.promise-actions { display: grid; gap: 6px; }
+.promise-actions button:not(.primary) { padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: white; font-weight: 800; color: var(--ink); }
+.living-head { display: grid; }
+.living-head > span { color: var(--muted); font-size: 12px; }
+.living-head strong { margin: 4px 0; font-family: Georgia, serif; font-size: 34px; color: var(--green); }
+.living-head strong.negative { color: #a34633; }
+.living-head small { color: var(--muted); font-size: 12px; }
+.meter { height: 10px; margin-top: 12px; border-radius: 999px; background: #e7ece8; overflow: hidden; }
+.meter span { display: block; height: 100%; background: var(--green-2); }
+.meter span.over { background: #c4614b; }
+.spend-form { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
+.spend-form > strong { font-size: 16px; }
+.verdict { margin: 12px 0 0; padding: 12px; border-radius: 11px; font-size: 13px; font-weight: 800; line-height: 1.5; }
+.verdict.yes { background: #e4f1e8; color: #2f6a47; }
+.verdict.talk { background: #f6ead9; color: #86501f; }
+.verdict.no { background: #f8e3de; color: #994635; }
+.check { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 13px; font-weight: 800; }
+.check input { width: 20px; height: 20px; accent-color: var(--green); }
+.expense-list { margin-top: 18px; }
+.expense-list p { display: flex; align-items: center; gap: 10px; margin: 0; padding: 11px 0; border-bottom: 1px solid var(--line); }
+.expense-list p > span { flex: 1; display: grid; min-width: 0; }
+.expense-list p > span b { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.expense-list small { color: var(--muted); font-size: 11px; }
+.expense-list p > b { font-size: 14px; }
+.expense-list button { width: 30px; height: 30px; border: 0; border-radius: 8px; background: #f3efe8; color: var(--muted); font-size: 16px; }
+.expense-list .empty { color: var(--muted); font-size: 12px; border: 0; }
+.export-button { padding: 14px; border: 1px dashed var(--green-2); border-radius: 14px; background: transparent; color: var(--green); font-weight: 800; }
+.connect-card h2 { margin: 0 0 8px; font-family: Georgia, "Batang", serif; font-size: 22px; }
+.code-box { margin-top: 14px; padding: 12px; display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: center; border-radius: 12px; background: #f5f4ee; }
+.code-box span { grid-column: 1 / -1; color: var(--muted); font-size: 11px; }
+.code-box code { font-size: 15px; font-weight: 800; word-break: break-all; }
+.code-box button { padding: 8px 12px; border: 0; border-radius: 9px; background: var(--green); color: white; font-weight: 800; }
+.sync-line { margin-top: 14px; padding: 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px; border-radius: 12px; background: #edf5f1; color: var(--green); font-size: 12px; font-weight: 800; }
+.sync-line.offline { background: #f6ead9; color: #86501f; }
+.sync-line.denied { background: #f8e3de; color: #994635; }
+.sync-line button { flex: 0 0 auto; padding: 7px 10px; border: 0; border-radius: 8px; background: white; font-size: 11px; font-weight: 800; }
+.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: grid; grid-template-columns: repeat(3, 1fr); padding: 6px 8px calc(6px + env(safe-area-inset-bottom)); background: rgba(255,253,248,.96); backdrop-filter: blur(16px); border-top: 1px solid rgba(25,54,47,.12); }
+.tabbar button { display: grid; justify-items: center; gap: 2px; padding: 6px 0; border: 0; background: none; color: var(--muted); font-size: 11px; font-weight: 800; }
+.tabbar button span { font-size: 18px; line-height: 1; }
+.tabbar button.active { color: var(--green); }
