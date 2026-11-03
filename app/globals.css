@@ -173,6 +173,7 @@ button { color: inherit; cursor: pointer; }
 .contributions > span { color: rgba(255,255,255,.55); font-size: 8px; }
 .contributions p { display: flex; justify-content: space-between; margin: 10px 0; font-size: 10px; }
 .contributions small { color: #a9d0c3; }
+.contributions b.negative { color: #ffb3a3; }
 .marriage-info { margin: 20px -30px -30px; padding: 16px 30px; background: rgba(0,0,0,.14); }
 .marriage-info strong { font-size: 9px; }
 .marriage-info p { margin: 4px 0 0; color: rgba(255,255,255,.63); font-size: 8px; line-height: 1.55; }

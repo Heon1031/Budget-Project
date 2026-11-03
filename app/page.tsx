@@ -96,6 +96,33 @@ const initialState: AppState = {
   marriageRegistered: false,
 };
 
+// 저장된 값에서 기본값과 같은 종류인 항목만 가져온다. 새 항목이 생겨도 예전 저장값이 깨지지 않는다.
+function mergeDefaults<T extends Record<string, unknown>>(defaults: T, source: unknown): T {
+  const input = source && typeof source === "object" ? (source as Record<string, unknown>) : {};
+  const merged = { ...defaults };
+  for (const key of Object.keys(defaults) as (keyof T & string)[]) {
+    const value = input[key];
+    if (typeof value !== typeof defaults[key]) continue;
+    if (typeof value === "number" && !Number.isFinite(value)) continue;
+    merged[key] = value as T[typeof key];
+  }
+  return merged;
+}
+
+function restoreState(saved: unknown): AppState {
+  const data = saved && typeof saved === "object" ? (saved as Partial<AppState>) : {};
+  const people = Array.isArray(data.people) ? data.people : [];
+  return {
+    people: [
+      mergeDefaults(initialState.people[0], people[0]),
+      mergeDefaults(initialState.people[1], people[1]),
+    ],
+    plan: mergeDefaults(initialState.plan, data.plan),
+    marriageRegistered:
+      typeof data.marriageRegistered === "boolean" ? data.marriageRegistered : initialState.marriageRegistered,
+  };
+}
+
 const won = (value: number) => `${Math.round(Math.max(0, value)).toLocaleString("ko-KR")}원`;
 const signedWon = (value: number) =>
   `${value < 0 ? "-" : ""}${Math.round(Math.abs(value)).toLocaleString("ko-KR")}원`;
@@ -206,6 +233,24 @@ function MoneyField({
   );
 }
 
+// 입력 중에는 친 글자를 그대로 보여 줘야 「12.」처럼 소수점을 이어서 칠 수 있다.
+function RateInput({ value, onChange }: { value: number; onChange: (value: number) => void }) {
+  const [draft, setDraft] = useState<string | null>(null);
+  const safeValue = Number.isFinite(value) ? value : 0;
+  return (
+    <input
+      inputMode="decimal"
+      value={draft ?? String(Number(safeValue.toFixed(1)))}
+      onChange={(event) => {
+        const text = event.target.value.replace(/[^\d.]/g, "");
+        setDraft(text);
+        onChange(Number(text) || 0);
+      }}
+      onBlur={() => setDraft(null)}
+    />
+  );
+}
+
 function AllocationField({
   label,
   rate,
@@ -231,7 +276,7 @@ function AllocationField({
         </label>
         <label>
           <span>비율</span>
-          <div><input inputMode="decimal" value={Number(safeRate.toFixed(1))} onChange={(event) => onChange(Math.min(100, Math.max(0, Number(event.target.value) || 0)))} /><b>%</b></div>
+          <div><RateInput value={safeRate} onChange={(value) => onChange(Math.min(100, Math.max(0, value)))} /><b>%</b></div>
         </label>
       </div>
     </div>
@@ -248,7 +293,7 @@ export default function Home() {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
-        setState(JSON.parse(saved) as AppState);
+        setState(restoreState(JSON.parse(saved)));
       } catch {
         localStorage.removeItem(STORAGE_KEY);
       }
@@ -431,7 +476,7 @@ export default function Home() {
                           </button>
                           <label>
                             <span>합계 비율</span>
-                            <div><input inputMode="decimal" value={Number(result.personal[index].investmentRate.toFixed(1))} onChange={(event) => updateInvestmentRate(index as 0 | 1, Number(event.target.value) || 0)} /><b>%</b></div>
+                            <div><RateInput value={result.personal[index].investmentRate} onChange={(rate) => updateInvestmentRate(index as 0 | 1, rate)} /><b>%</b></div>
                           </label>
                           <p>{won(result.personal[index].investment)}</p>
                         </div>
@@ -574,7 +619,11 @@ export default function Home() {
             {[0, 1].map((index) => (
               <p key={index}>
                 <span>{state.people[index].name} <small>{Math.round(result.personal[index].investmentRate + state.people[index].foodRate + state.people[index].cultureRate + state.people[index].travelRate + state.people[index].cashRate)}% 계획</small></span>
-                <b>{won(result.personal[index].remaining)} 남음</b>
+                <b className={result.personal[index].remaining < 0 ? "negative" : ""}>
+                  {result.personal[index].remaining < 0
+                    ? `${won(-result.personal[index].remaining)} 부족`
+                    : `${won(result.personal[index].remaining)} 남음`}
+                </b>
               </p>
             ))}
           </div>
