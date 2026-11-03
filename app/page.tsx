@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { House, ListChecks, Settings, Sparkles, Waves, type LucideIcon } from "lucide-react";
 import { ConnectPanel } from "./connect-panel";
+import { LockScreen, LockSettings } from "./lock-screen";
+import { clearLock, readLock } from "./lib/lock";
 import { FixedBoard } from "./fixed-board";
 import { FlowBoard } from "./flow-board";
 import { HousingBoard } from "./housing-board";
@@ -36,7 +38,10 @@ export default function Home() {
   const [hydrated, setHydrated] = useState(false);
   const [vault, setVault] = useState<Vault | null>(null);
   const [tab, setTab] = useState<Tab>("flow");
-  const shared = useSharedRecords(vault);
+  // 잠금이 켜진 폰은 Face ID · 지문(또는 비밀번호)으로 열기 전까지 기록을 풀지 않는다.
+  const [unlocked, setUnlocked] = useState(false);
+  const activeVault = vault && unlocked ? vault : null;
+  const shared = useSharedRecords(activeVault);
   const { write: writeShared, loaded: sharedLoaded, pulled: sharedPulled } = shared;
   // 서버와 마지막으로 맞춘 계획(JSON). 같은 내용을 다시 보내거나, 보낸 걸 다시 덮어쓰지 않으려고 둔다.
   const [syncedPlanJson, setSyncedPlanJson] = useState("");
@@ -53,6 +58,7 @@ export default function Home() {
         }
       }
       if (stored) setVault(stored);
+      setUnlocked(!readLock());
       setHydrated(true);
     });
   }, []);
@@ -75,7 +81,18 @@ export default function Home() {
   }
 
   // 처음 연결한 폰은 서버 계획을 먼저 받아 본 뒤에야 내 계획을 보낸다(상대 계획을 덮어쓰지 않게).
-  const canSendPlan = Boolean(vault) && sharedLoaded && (sharedPulled || remotePlan !== undefined);
+  // 잠긴 채로 3분 넘게 다른 앱에 있다 돌아오면 다시 잠근다.
+  useEffect(() => {
+    let hiddenAt = 0;
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") hiddenAt = Date.now();
+      else if (hiddenAt && Date.now() - hiddenAt > 3 * 60_000 && readLock()) setUnlocked(false);
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, []);
+
+  const canSendPlan = Boolean(activeVault) && sharedLoaded && (sharedPulled || remotePlan !== undefined);
   useEffect(() => {
     if (!canSendPlan) return;
     const json = JSON.stringify(state);
@@ -90,6 +107,7 @@ export default function Home() {
   const disconnect = async () => {
     if (vault) forgetCache(vault.householdId);
     await clearVault();
+    clearLock();
     setVault(null);
     setSyncedPlanJson("");
     setState(initialState);
@@ -113,6 +131,34 @@ export default function Home() {
       people[index] = { ...people[index], ...patch };
       return { ...current, people };
     });
+
+  // 연결 안 된 폰은 연결 화면만, 잠긴 폰은 잠금 화면만 보인다.
+  if (hydrated && !vault) {
+    return (
+      <main className="gate">
+        <ConnectPanel
+          vault={null}
+          names={names}
+          status={shared.status}
+          error={shared.error}
+          pendingCount={shared.pendingCount}
+          onConnected={(connected) => {
+            setVault(connected);
+            setUnlocked(true);
+          }}
+          onDisconnect={() => {}}
+          onSync={() => {}}
+        />
+      </main>
+    );
+  }
+  if (hydrated && vault && !unlocked) {
+    return (
+      <main className="gate">
+        <LockScreen vault={vault} onUnlock={() => setUnlocked(true)} />
+      </main>
+    );
+  }
 
   return (
     <main>
@@ -160,13 +206,17 @@ export default function Home() {
         )}
         {tab === "settings" && (
           <SettingsBoard state={state} salary={salary} onPerson={updatePerson} onState={update}>
+            {vault && <LockSettings name={names[vault.me]} onLockNow={() => setUnlocked(false)} />}
             <ConnectPanel
               vault={vault}
               names={names}
               status={shared.status}
               error={shared.error}
               pendingCount={shared.pendingCount}
-              onConnected={(connected) => setVault(connected)}
+              onConnected={(connected) => {
+                setVault(connected);
+                setUnlocked(true);
+              }}
               onDisconnect={() => void disconnect()}
               onSync={() => void shared.syncNow()}
             />

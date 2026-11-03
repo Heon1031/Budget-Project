@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Link2, TriangleAlert } from "lucide-react";
 import { checkVault, registerHousehold, type SyncStatus } from "./lib/sync";
 import { deriveVault, isHouseholdId, newHouseholdId, saveVault, type Vault } from "./lib/vault";
 
@@ -39,8 +40,7 @@ export function ConnectPanel({
   if (vault) {
     return (
       <section className="card connect-card">
-        <h2>두 폰 연결됨</h2>
-        <p className="muted">이 폰은 <b>{names[vault.me]}</b>의 폰이에요. 기록은 이 폰에서 잠근 뒤 서버로 보내요.</p>
+        <h3 className="card-title"><Link2 size={18} /> 두 폰 연결됨 · {names[vault.me]}</h3>
         <div className="code-box">
           <span>연결 코드</span>
           <code>{vault.householdId}</code>
@@ -48,7 +48,7 @@ export function ConnectPanel({
             void navigator.clipboard?.writeText(vault.householdId).then(() => setCopied(true));
           }}>{copied ? "복사됨" : "복사"}</button>
         </div>
-        <p className="muted small">상대 폰에서 「연결 코드로 들어가기」에 이 코드와 같은 비밀번호를 넣으면 돼요. 코드와 비밀번호는 한 메시지에 같이 보내지 마세요.</p>
+        <p className="muted small">코드와 비밀번호는 한 메시지에 같이 보내지 마세요.</p>
         <div className={`sync-line ${status}`}>
           {status === "syncing" && "맞추는 중…"}
           {status === "idle" && (pendingCount > 0 ? `보낼 기록 ${pendingCount}개 대기` : "최신 상태")}
@@ -88,8 +88,9 @@ export function ConnectPanel({
 
   return (
     <section className="card connect-card">
-      <h2>두 폰 연결하기</h2>
-      <p className="muted">약속과 생활비 기록을 둘이 함께 보려면 연결해요. 비밀번호는 서버로 가지 않고, 이 폰에서 기록을 잠그는 데만 써요. <b>잊으면 기록을 되살릴 수 없어요.</b></p>
+      <span className="lock-badge small"><Link2 size={22} /></span>
+      <h2>둘이자산 연결</h2>
+      <p className="badge warn"><TriangleAlert size={14} /> 비밀번호를 잊으면 기록을 되살릴 수 없어요</p>
       <div className="toggle-group wide">
         <button className={mode === "new" ? "active" : ""} onClick={() => setMode("new")}>새로 시작</button>
         <button className={mode === "join" ? "active" : ""} onClick={() => setMode("join")}>연결 코드로 들어가기</button>
@@ -105,7 +106,7 @@ export function ConnectPanel({
         </label>
       )}
       <label className="field">
-        <span>비밀번호 <small>단어 서너 개를 이어 쓰면 안전해요</small></span>
+        <span>비밀번호 <small>단어 서너 개 이어 쓰기</small></span>
         <input className="plain-input" type="password" autoComplete={mode === "new" ? "new-password" : "current-password"} value={passphrase} onChange={(event) => setPassphrase(event.target.value)} />
       </label>
       {mode === "new" && (
