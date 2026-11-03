@@ -6,7 +6,7 @@ import { QrImage, QrScanner } from "./qr";
 import { checkVault, registerHousehold, type SyncStatus } from "./lib/sync";
 import { decodePairing, encodePairing, newVault, saveVault, vaultFromSecret, type Vault } from "./lib/vault";
 
-// 두 폰 연결. 둘 중 아무 폰에서 「처음 시작」을 누르고, 다른 폰이 그 폰의 QR을 찍으면 끝.
+// 두 폰 연결. 둘 중 아무 폰에서 「새로 시작하기」를 누르면 바로 QR이 뜨고, 다른 폰이 그 QR을 찍으면 끝.
 // 누가 주인인 구조가 아니다. 연결된 폰은 둘 다 언제든 QR을 보여 줄 수 있다.
 
 const QR_SECONDS = 120;
@@ -43,6 +43,8 @@ function StartCard({ names, onConnected }: { names: [string, string]; onConnecte
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  // 처음 시작한 폰: 바로 QR을 보여 주고, 상대 폰이 찍은 뒤(또는 나중에) 앱으로 들어간다.
+  const [created, setCreated] = useState<Vault | null>(null);
 
   const start = async () => {
     setBusy(true);
@@ -51,7 +53,7 @@ function StartCard({ names, onConnected }: { names: [string, string]; onConnecte
       const vault = await newVault(me);
       await registerHousehold(vault);
       await saveVault(vault);
-      onConnected(vault);
+      setCreated(vault);
     } catch (caught) {
       setMessage(caught instanceof Error ? caught.message : "시작하지 못했어요.");
     } finally {
@@ -83,6 +85,22 @@ function StartCard({ names, onConnected }: { names: [string, string]; onConnecte
 
   const onScan = useCallback((text: string) => void join(text), [join]);
 
+  if (created) {
+    return (
+      <section className="card connect-card">
+        <span className="lock-badge small"><QrCode size={22} /></span>
+        <h2>상대 폰으로 찍어 주세요</h2>
+        <p className="muted small">상대 폰에서 이 주소를 열고 「상대 폰 QR 찍기」를 누르면 연결돼요.</p>
+        <div className="qr-box">
+          <QrImage text={encodePairing(created)} />
+          <p className="badge warn"><TriangleAlert size={14} /> 옆에서 직접 찍기만 · 사진으로 보내지 마세요</p>
+        </div>
+        <button className="primary" onClick={() => onConnected(created)}>다 찍었어요 · 시작하기</button>
+        <button className="text-button" onClick={() => onConnected(created)}>나중에 연결할게요(설정에서 다시 볼 수 있어요)</button>
+      </section>
+    );
+  }
+
   return (
     <section className="card connect-card">
       <span className="lock-badge small"><Link2 size={22} /></span>
@@ -90,15 +108,15 @@ function StartCard({ names, onConnected }: { names: [string, string]; onConnecte
 
       <div className="start-grid">
         <div className="start-option">
-          <b>처음 시작</b>
+          <b>처음 쓰는 거라면</b>
           <div className="toggle-group wide">
             <button className={me === 0 ? "active" : ""} onClick={() => setMe(0)}>나는 {names[0]}</button>
             <button className={me === 1 ? "active" : ""} onClick={() => setMe(1)}>나는 {names[1]}</button>
           </div>
-          <button className="primary" disabled={busy} onClick={() => void start()}>{busy ? "만드는 중…" : "우리 집 만들기"}</button>
+          <button className="primary" disabled={busy} onClick={() => void start()}>{busy ? "준비 중…" : "새로 시작하기"}</button>
         </div>
         <div className="start-option">
-          <b>상대 폰과 연결</b>
+          <b>상대가 이미 시작했다면</b>
           <button className="primary ghost-primary" disabled={busy} onClick={() => setScanning(true)}><ScanLine size={18} /> 상대 폰 QR 찍기</button>
           <button className="text-button" onClick={() => setPasting(!pasting)}><ClipboardPaste size={14} /> 코드 붙여넣기</button>
         </div>
