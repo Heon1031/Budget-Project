@@ -13,7 +13,7 @@ async function render() {
   );
 }
 
-test("신혼부부 자산 플래너 첫 화면을 서버 렌더링한다", async () => {
+test("첫 화면(흐름)을 서버 렌더링한다", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
@@ -21,18 +21,10 @@ test("신혼부부 자산 플래너 첫 화면을 서버 렌더링한다", async
   const html = await response.text();
   assert.match(html, /<html lang="ko">/i);
   assert.match(html, /<title>둘이자산 \| 신혼부부 자산형성 플래너<\/title>/i);
-  assert.match(html, /우리 둘의 월급과 예산/);
-  assert.match(html, /실수령액 100% 나누기/);
-  assert.match(html, /투자·적금/);
-  assert.match(html, /현금·용돈/);
-  assert.match(html, /예금·적금/);
-  assert.match(html, /둘의 월 실수령 합계/);
-  assert.match(html, /1번에서 계획한 합계/);
-  assert.match(html, /둘이 함께 내는 주거비/);
-  assert.match(html, /전기요금/);
-  assert.match(html, /이 속도로 모으면/);
-  assert.match(html, /이번 달/);
-  assert.match(html, /집 마련/);
+  assert.match(html, /이대로 살면 1년 뒤/);
+  assert.match(html, /이번 달 마음 편히 쓸 돈/);
+  assert.match(html, /내 집까지/);
+  for (const tab of ["흐름", "고정지출", "해볼까", "내 집", "설정"]) assert.match(html, new RegExp(tab));
   assert.match(html, /rel="manifest" href="[^"]*\/manifest\.webmanifest"/);
   assert.match(html, /serviceWorker/);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton/i);
