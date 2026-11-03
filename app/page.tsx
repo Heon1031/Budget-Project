@@ -6,7 +6,7 @@ import { MoneyField, RateInput, manwon, parseWon, signedWon, won } from "./field
 import { forgetCache, useSharedRecords } from "./lib/sync";
 import { clearVault, loadVault, type Vault } from "./lib/vault";
 import { HousingBoard } from "./housing-board";
-import { defaultMoveDate, initialHouse, type HousePlan } from "./lib/housing";
+import { calculateHouse, daysUntil, defaultMoveDate, initialHouse, type HousePlan } from "./lib/housing";
 import { MonthBoard, type PromiseAmounts } from "./month-board";
 
 type Person = {
@@ -404,6 +404,9 @@ export default function Home() {
       threshold: 100_000,
     };
   }, [result, state.people, state.plan.housingSubscription, state.house.monthlySaving]);
+  const moveDate = state.house.moveDate || defaultMoveDate();
+  const houseCalc = calculateHouse(state.house, state.people[0].annualGross + state.people[1].annualGross, state.plan.currentAssets, moveDate);
+  const houseDaysLeft = daysUntil(moveDate);
   const names: [string, string] = [state.people[0].name || "A", state.people[1].name || "B"];
 
   const updatePerson = (index: 0 | 1, patch: Partial<Person>) => {
@@ -460,6 +463,8 @@ export default function Home() {
               names={names}
               suggestion={suggestion}
               totalNet={result.totalNet}
+              house={{ daysLeft: houseDaysLeft, have: houseCalc.willHave, need: houseCalc.needCash }}
+              onOpenHouse={() => setTab("house")}
             />
           ) : vault ? (
             <section className="card"><p className="muted">기록을 여는 중…</p></section>
@@ -477,7 +482,7 @@ export default function Home() {
         <div className="layout">
           <HousingBoard
             house={state.house}
-            moveDate={state.house.moveDate || defaultMoveDate()}
+            moveDate={moveDate}
             onChange={(patch) => setState((current) => ({ ...current, house: { ...current.house, ...patch } }))}
             annualIncome={state.people[0].annualGross + state.people[1].annualGross}
             currentAssets={state.plan.currentAssets}

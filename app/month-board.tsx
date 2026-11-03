@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { MoneyField, signedWon, won } from "./fields";
+import { MoneyField, koreanWon, signedWon, won } from "./fields";
 
 // 이번 달 약속과 공동 생활비 기록. 「이거 사도 돼?」를 사람 대신 숫자가 답한다.
 
@@ -88,6 +88,8 @@ export function MonthBoard({
   names,
   suggestion,
   totalNet,
+  house,
+  onOpenHouse,
 }: {
   records: Map<string, unknown>;
   write: (id: string, value: unknown | null) => Promise<void>;
@@ -95,6 +97,8 @@ export function MonthBoard({
   names: [string, string];
   suggestion: PromiseAmounts;
   totalNet: number;
+  house: { daysLeft: number; have: number; need: number };
+  onOpenHouse: () => void;
 }) {
   const [month, setMonth] = useState(currentMonth);
   const saved = normalize(records.get(promiseId(month)) as MonthPromise | undefined);
@@ -170,6 +174,29 @@ export function MonthBoard({
 
   return (
     <div className="content">
+      <section className="summary" style={{ order: -1 }} aria-label="한눈에 보기">
+        <div className="summary-main">
+          <span>{month === currentMonth() ? "오늘 둘이 쓸 수 있는 돈" : `${Number(month.slice(5))}월 남은 공동 생활비`}</span>
+          {promise ? (
+            <>
+              <strong className={remaining < 0 ? "negative" : ""}>
+                {remaining < 0 ? `${won(-remaining)} 넘었어요` : won(month === currentMonth() && days > 0 ? remaining / days : remaining)}
+              </strong>
+              <small>이번 달 공동 생활비 {won(Math.max(0, remaining))} 남음{days > 0 ? ` · ${days}일 남음` : ""}</small>
+            </>
+          ) : (
+            <>
+              <strong>약속을 먼저 정해요</strong>
+              <small>이번 달 저축 · 생활비 금액을 둘이 합의하면 여기에 하루 쓸 돈이 나와요</small>
+            </>
+          )}
+        </div>
+        <button className="summary-house" onClick={onOpenHouse}>
+          <span>내 집까지 {house.daysLeft > 0 ? `D-${house.daysLeft}` : "잔금일 지남"}</span>
+          <b>{koreanWon(house.have)} <small>모일 예정 · 필요 {koreanWon(house.need)}</small></b>
+          <i className="meter"><span style={{ width: `${house.need > 0 ? Math.min(100, (house.have / house.need) * 100) : 0}%` }} /></i>
+        </button>
+      </section>
       <section className="card month-card" style={{ order: promise ? 3 : 0 }}>
         <div className="month-nav">
           <button aria-label="이전 달" onClick={() => { setMonth(shiftMonth(month, -1)); setDraft(null); setEditing(false); }}>‹</button>

@@ -31,6 +31,7 @@ export type HousePlan = {
   brokerRate: number;
   otherCosts: number;
   done: Record<string, boolean>;
+  newsSeen: number;
 };
 
 export function defaultMoveDate(now = new Date()) {
@@ -42,7 +43,7 @@ export const initialHouse: HousePlan = {
   targetPrice: 600_000_000,
   capitalArea: true,
   firstHome: true,
-  loanRate: 4.0,
+  loanRate: 4.9,
   stressRate: 1.5,
   loanYears: 30,
   existingAnnualDebt: 0,
@@ -53,6 +54,7 @@ export const initialHouse: HousePlan = {
   brokerRate: 0.4,
   otherCosts: 5_000_000,
   done: {},
+  newsSeen: 0,
 };
 
 // 원리금균등: 매달 낼 돈 → 빌릴 수 있는 원금
@@ -76,6 +78,13 @@ export function monthsUntil(dateText: string, now = new Date()) {
   const [year, month] = dateText.split("-").map(Number);
   if (!year || !month) return 0;
   return Math.max(0, (year - now.getFullYear()) * 12 + (month - 1 - now.getMonth()));
+}
+
+export function daysUntil(dateText: string, now = new Date()) {
+  const [year, month, day] = dateText.split("-").map(Number);
+  if (!year) return 0;
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.round((new Date(year, month - 1, day || 1).getTime() - today.getTime()) / 86_400_000);
 }
 
 export function calculateHouse(house: HousePlan, annualIncome: number, currentAssets: number, moveDate: string) {

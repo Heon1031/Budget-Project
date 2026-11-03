@@ -1,5 +1,5 @@
 // 둘이자산 · 오프라인 저장. 기록(/api)은 절대 저장하지 않고 앱 화면 파일만 저장한다.
-const CACHE = "duri-v2";
+const CACHE = "duri-v3";
 const SHELL = ["/", "/manifest.webmanifest", "/icon-192.png", "/apple-touch-icon.png", "/favicon.svg", "/fonts/pretendard/pretendardvariable-dynamic-subset.css"];
 
 self.addEventListener("install", (event) => {

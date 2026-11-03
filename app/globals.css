@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /*
-  둘이자산 디자인 토큰 (2026-11-03)
+  둘이자산 디자인 토큰 (2026-11-03, 푸른색으로 바꿈)
   - 글꼴: Pretendard Variable (public/fonts/pretendard, OFL). 숫자는 같은 글꼴 + 고정폭 숫자.
   - 색: 아래 변수만 쓴다. 어두운 모드는 같은 이름을 다시 정의한다.
   - 글자 크기: 12 · 13 · 15 · 16(입력) · 18 · 22 · 32
@@ -9,31 +9,31 @@
 :root {
   --font: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
 
-  --bg: #f3f4f1;
+  --bg: #f2f4f6;
   --surface: #ffffff;
-  --surface-2: #f6f7f4;
-  --line: #e4e8e5;
-  --line-strong: #cdd5d1;
+  --surface-2: #f7f8fa;
+  --line: #e5e8eb;
+  --line-strong: #d1d6db;
 
-  --ink: #17201d;
-  --ink-2: #4b5852;
-  --ink-3: #66736d;
+  --ink: #191f28;
+  --ink-2: #4e5968;
+  --ink-3: #6b7684;
 
-  --brand: #0e6b58;
-  --brand-strong: #0a5545;
-  --brand-weak: #e3f1ec;
+  --brand: #2f6fed;
+  --brand-strong: #1b5bd6;
+  --brand-weak: #e8f0fe;
   --on-brand: #ffffff;
-  --partner: #6a58a6;
-  --partner-weak: #efecf7;
+  --partner: #7c5ce0;
+  --partner-weak: #f1edfc;
 
-  --good: #1d7346;
-  --good-weak: #e5f3ea;
-  --warn: #92560f;
-  --warn-weak: #fbf0de;
-  --bad: #b0402c;
-  --bad-weak: #fbe8e3;
+  --good: #0f8a5f;
+  --good-weak: #e6f6ef;
+  --warn: #a8590b;
+  --warn-weak: #fff3e0;
+  --bad: #e0384a;
+  --bad-weak: #fdebed;
 
-  --hero-bg: #0e6b58;
+  --hero-bg: #2f6fed;
   --hero-ink: #ffffff;
   --hero-muted: rgba(255, 255, 255, .72);
   --hero-line: rgba(255, 255, 255, .16);
@@ -49,43 +49,43 @@
   --radius: 18px;
   --radius-s: 12px;
   --shadow: 0 1px 2px rgba(16, 24, 20, .04), 0 8px 24px rgba(16, 24, 20, .06);
-  --focus: 0 0 0 3px rgba(14, 107, 88, .22);
+  --focus: 0 0 0 3px rgba(47, 111, 237, .25);
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0e1412;
-    --surface: #161e1b;
-    --surface-2: #1d2723;
-    --line: #29352f;
-    --line-strong: #3a4842;
+    --bg: #101318;
+    --surface: #191d24;
+    --surface-2: #20252d;
+    --line: #2b313a;
+    --line-strong: #3b434e;
 
-    --ink: #e8eeeb;
-    --ink-2: #b6c2bd;
-    --ink-3: #8f9c97;
+    --ink: #eef1f5;
+    --ink-2: #b9c1cc;
+    --ink-3: #8d97a4;
 
-    --brand: #4cc3a2;
-    --brand-strong: #3fb393;
-    --brand-weak: #173a31;
-    --on-brand: #06120e;
-    --partner: #b3a6ea;
-    --partner-weak: #2a2543;
+    --brand: #6b9cff;
+    --brand-strong: #4f86f7;
+    --brand-weak: #1b2a47;
+    --on-brand: #0a1224;
+    --partner: #b4a2f5;
+    --partner-weak: #2a2443;
 
-    --good: #6fd29b;
-    --good-weak: #17322a;
-    --warn: #ebbb73;
-    --warn-weak: #3a2d16;
-    --bad: #f39682;
-    --bad-weak: #3d1f19;
+    --good: #4fd19b;
+    --good-weak: #13302a;
+    --warn: #f2b866;
+    --warn-weak: #3a2c16;
+    --bad: #ff8a96;
+    --bad-weak: #3d1c22;
 
-    --hero-bg: #133a31;
+    --hero-bg: #1d3a74;
     --hero-ink: #f0f6f3;
     --hero-muted: rgba(240, 246, 243, .7);
     --hero-line: rgba(240, 246, 243, .14);
 
     --shadow: 0 1px 2px rgba(0, 0, 0, .3);
-    --focus: 0 0 0 3px rgba(76, 195, 162, .3);
+    --focus: 0 0 0 3px rgba(107, 156, 255, .35);
     color-scheme: dark;
   }
 }
@@ -118,7 +118,7 @@ main { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
 .topbar button { min-height: 44px; border: 0; background: none; color: var(--ink-3); font-size: var(--fs-caption); padding: 0 8px; }
 .layout { max-width: 1220px; margin: auto; padding: 20px 16px 40px; display: grid; grid-template-columns: 1fr; gap: 16px; align-items: start; }
 .content { display: grid; gap: 14px; }
-.card { padding: 22px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); }
+.card { padding: 24px 22px; border-radius: 24px; background: var(--surface); border: 0; }
 .card-title { margin: 0 0 12px; font-size: var(--fs-title); font-weight: 700; }
 .muted { color: var(--ink-2); font-size: var(--fs-small); line-height: 1.6; }
 .muted.small { font-size: var(--fs-caption); color: var(--ink-3); }
@@ -264,6 +264,20 @@ button.danger { margin-top: 18px; width: 100%; min-height: 48px; border: 1px sol
 footer { max-width: 1220px; margin: 0 auto; padding: 24px 16px 32px; display: flex; justify-content: space-between; gap: 8px; border-top: 1px solid var(--line); color: var(--ink-3); font-size: var(--fs-caption); }
 footer p { margin: 0; }
 
+/* 한눈에 보기(이번 달 맨 위) */
+.summary { display: grid; gap: 10px; }
+.summary-main { padding: 24px 22px; border-radius: 24px; background: var(--brand); color: var(--on-brand); display: grid; gap: 4px; }
+.summary-main > span { font-size: var(--fs-small); font-weight: 600; opacity: .85; }
+.summary-main strong { font-size: 36px; font-weight: 800; letter-spacing: -0.04em; line-height: 1.2; }
+.summary-main strong.negative { color: #ffd2d6; }
+.summary-main small { font-size: var(--fs-small); opacity: .85; }
+.summary-house { display: grid; gap: 6px; padding: 18px 22px; border: 0; border-radius: 24px; background: var(--surface); text-align: left; color: var(--ink); }
+.summary-house > span { color: var(--ink-2); font-size: var(--fs-small); font-weight: 600; }
+.summary-house > span::after { content: " ›"; color: var(--ink-3); }
+.summary-house b { font-size: 20px; font-weight: 800; }
+.summary-house small { color: var(--ink-3); font-size: var(--fs-small); font-weight: 600; }
+.summary-house .meter { display: block; margin-top: 4px; }
+
 /* 이번 달 */
 .month-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
 .month-nav h2 { margin: 0; font-size: var(--fs-h2); font-weight: 800; }
@@ -285,6 +299,7 @@ footer p { margin: 0; }
 .living-head > span, .house-head > span { color: var(--ink-2); font-size: var(--fs-small); font-weight: 600; }
 .living-head strong, .house-head strong { margin: 2px 0 4px; font-size: var(--fs-display); font-weight: 800; letter-spacing: -0.035em; color: var(--brand); line-height: 1.2; }
 .house-head strong { font-size: 28px; }
+.living-head strong { font-size: 24px; }
 .living-head strong.negative, .house-head strong.negative { color: var(--bad); }
 .living-head small, .house-head small { color: var(--ink-3); font-size: var(--fs-small); line-height: 1.55; }
 .meter { height: 10px; margin-top: 12px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line); overflow: hidden; }
@@ -324,6 +339,15 @@ footer p { margin: 0; }
 .advanced { margin-top: 12px; }
 .advanced summary { min-height: 44px; display: flex; align-items: center; color: var(--brand); font-size: var(--fs-small); font-weight: 700; cursor: pointer; }
 .rate-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 10px; }
+
+.market-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 0 12px; }
+.market-row span { display: grid; gap: 2px; }
+.market-row small, .news-list small { color: var(--ink-3); font-size: var(--fs-caption); }
+.market-row button { flex: 0 0 auto; min-height: 40px; padding: 0 12px; border: 0; border-radius: 10px; background: var(--brand-weak); color: var(--brand); font-size: var(--fs-small); font-weight: 700; }
+.market-row em { flex: 0 0 auto; color: var(--good); font-size: var(--fs-caption); font-style: normal; font-weight: 700; }
+.news-list { margin: 8px 0 0; padding: 0; list-style: none; }
+.news-list a { min-height: 44px; display: grid; gap: 2px; padding: 10px 0; border-bottom: 1px solid var(--line); color: var(--ink); text-decoration: none; }
+.news-list b { font-size: var(--fs-small); line-height: 1.5; }
 
 /* 연결 */
 .connect-card h2 { margin: 0 0 8px; font-size: var(--fs-h2); font-weight: 800; }

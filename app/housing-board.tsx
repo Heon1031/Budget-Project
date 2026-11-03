@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { MoneyField, RateInput, koreanWon, won } from "./fields";
 import { HOUSE_STEPS, RULES, calculateHouse, stepDate, type HousePlan } from "./lib/housing";
+import type { MarketInfo } from "./lib/market";
 
 // 1년 안 내 집 마련: 필요한 현금, 대출 가능액(추정), 모자란 돈, 매달 더 모을 돈, 잔금일 기준 할 일.
 
@@ -22,6 +24,18 @@ export function HousingBoard({
   monthlyNet: number;
   unassigned: number;
 }) {
+  const [market, setMarket] = useState<MarketInfo | null>(null);
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/market")
+      .then((response) => (response.ok ? (response.json() as Promise<MarketInfo>) : null))
+      .then((info) => alive && setMarket(info))
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
+  const freshNews = (market?.regNews ?? []).filter((item) => item.id > house.newsSeen);
   const calc = calculateHouse(house, annualIncome, currentAssets, moveDate);
   const paymentShare = monthlyNet > 0 ? (calc.payment / monthlyNet) * 100 : 0;
   const today = new Date().toISOString().slice(0, 10);
@@ -62,6 +76,43 @@ export function HousingBoard({
           <p>대출 매달 상환 <b>{won(calc.payment)}</b> <small>({house.loanYears}년 · 연 {house.loanRate}% · 원리금균등)</small> — 둘의 실수령의 {Math.round(paymentShare)}%{paymentShare > 40 ? " · 부담이 커요" : ""}</p>
         </div>
       </section>
+
+      {market && (market.loanRate || market.regNews.length > 0) && (
+        <section className="card market-card">
+          <h3 className="card-title">나라에서 나온 숫자</h3>
+          {market.loanRate && (
+            <div className="market-row">
+              <span>
+                <b>은행 주택담보대출 평균 금리 {market.loanRate.rate.toFixed(2)}%</b>
+                <small>{market.loanRate.month.slice(0, 4)}년 {Number(market.loanRate.month.slice(5))}월 · 한국은행</small>
+              </span>
+              {Math.abs(market.loanRate.rate - house.loanRate) >= 0.01 ? (
+                <button onClick={() => onChange({ loanRate: market.loanRate!.rate })}>내 계산에 쓰기</button>
+              ) : (
+                <em>계산에 쓰는 중</em>
+              )}
+            </div>
+          )}
+          {freshNews.length > 0 ? (
+            <div className="news-alert">
+              <p className="verdict talk">대출 규제 관련 새 소식이 {freshNews.length}건 있어요. 규제가 바뀌었다면 앱의 한도 계산 숫자도 고쳐야 해요.</p>
+              <ul className="news-list">
+                {freshNews.slice(0, 3).map((item) => (
+                  <li key={item.id}>
+                    <a href={item.url} target="_blank" rel="noreferrer">
+                      <b>{item.title}</b>
+                      <small>{item.date.replace(/-/g, ".")} · 금융위원회</small>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+              <button className="text-button" onClick={() => onChange({ newsSeen: Math.max(...freshNews.map((item) => item.id)) })}>다 확인했어요</button>
+            </div>
+          ) : (
+            <p className="muted small">새 대출 규제 소식은 없어요. 매일 아침 금융위원회 보도자료를 확인해요.</p>
+          )}
+        </section>
+      )}
 
       <section className="card">
         <h3 className="card-title">우리 조건</h3>

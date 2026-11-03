@@ -1,6 +1,7 @@
 /** Cloudflare Worker entry point for the vinext-starter template. */
 import { handleImageOptimization, DEFAULT_DEVICE_SIZES, DEFAULT_IMAGE_SIZES } from "vinext/server/image-optimization";
 import handler from "vinext/server/app-router-entry";
+import { refreshMarket } from "../app/lib/market";
 
 interface Env {
   ASSETS: Fetcher;
@@ -41,6 +42,11 @@ const worker = {
     }
 
     return handler.fetch(request, env, ctx);
+  },
+
+  // 예약 작업(wrangler.jsonc triggers): 공개 금리 · 규제 소식을 새로 받아 둔다.
+  async scheduled(_controller: unknown, _env: Env, ctx: ExecutionContext): Promise<void> {
+    ctx.waitUntil(refreshMarket());
   },
 };
 

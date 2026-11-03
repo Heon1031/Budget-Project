@@ -13,5 +13,7 @@
       "migrations_dir": "migrations"
     }
   ],
+  // 매일 오전 9시(한국 시간)에 금리 · 규제 소식을 새로 받는다. ECOS_API_KEY는 `wrangler secret put ECOS_API_KEY`로 넣는다.
+  "triggers": { "crons": ["0 0 * * *"] },
   "observability": { "enabled": true }
 }

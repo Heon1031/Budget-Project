@@ -37,8 +37,9 @@ npm.cmd run dev
 
 1. `npx wrangler login`
 2. `npx wrangler d1 create duri-budget` → 나온 `database_id`를 `wrangler.jsonc`에 넣기
-3. `npm.cmd run db:remote` 후 `npm.cmd run deploy`
-4. 자동 배포: GitHub 저장소 Secrets에 `CLOUDFLARE_API_TOKEN` · `CLOUDFLARE_ACCOUNT_ID`를 넣으면 main에 올릴 때마다 `.github/workflows/deploy.yml`이 배포합니다.
+3. `npx wrangler secret put ECOS_API_KEY` (한국은행 ECOS 무료 키 — 금리 자동 갱신용. 로컬은 `.dev.vars`에 `ECOS_API_KEY=sample`)
+4. `npm.cmd run db:remote` 후 `npm.cmd run deploy`
+5. 자동 배포: GitHub 저장소 Secrets에 `CLOUDFLARE_API_TOKEN` · `CLOUDFLARE_ACCOUNT_ID`를 넣으면 main에 올릴 때마다 `.github/workflows/deploy.yml`이 배포합니다.
 
 검증:
 

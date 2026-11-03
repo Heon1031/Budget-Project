@@ -20,5 +20,5 @@ interface Fetcher {
 }
 
 declare module "cloudflare:workers" {
-  export const env: { DB: D1Database };
+  export const env: { DB: D1Database; ECOS_API_KEY?: string };
 }
