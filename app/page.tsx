@@ -5,6 +5,8 @@ import { ConnectPanel } from "./connect-panel";
 import { MoneyField, RateInput, manwon, parseWon, signedWon, won } from "./fields";
 import { forgetCache, useSharedRecords } from "./lib/sync";
 import { clearVault, loadVault, type Vault } from "./lib/vault";
+import { HousingBoard } from "./housing-board";
+import { defaultMoveDate, initialHouse, type HousePlan } from "./lib/housing";
 import { MonthBoard, type PromiseAmounts } from "./month-board";
 
 type Person = {
@@ -40,6 +42,7 @@ type AppState = {
   people: [Person, Person];
   plan: Plan;
   marriageRegistered: boolean;
+  house: HousePlan;
 };
 
 const STORAGE_KEY = "duri-asset-plan-v4";
@@ -99,6 +102,7 @@ const initialState: AppState = {
     managementFee: 150_000,
   },
   marriageRegistered: false,
+  house: initialHouse,
 };
 
 // 저장된 값에서 기본값과 같은 종류인 항목만 가져온다. 새 항목이 생겨도 예전 저장값이 깨지지 않는다.
@@ -123,6 +127,7 @@ function restoreState(saved: unknown): AppState {
       mergeDefaults(initialState.people[1], people[1]),
     ],
     plan: mergeDefaults(initialState.plan, data.plan),
+    house: mergeDefaults(initialHouse, data.house),
     marriageRegistered:
       typeof data.marriageRegistered === "boolean" ? data.marriageRegistered : initialState.marriageRegistered,
   };
@@ -244,7 +249,7 @@ export default function Home() {
   const [openBreakdown, setOpenBreakdown] = useState<0 | 1 | null>(null);
   const [openInvestment, setOpenInvestment] = useState<0 | 1 | null>(0);
   const [vault, setVault] = useState<Vault | null>(null);
-  const [tab, setTab] = useState<"month" | "plan" | "connect">("plan");
+  const [tab, setTab] = useState<"month" | "house" | "plan" | "connect">("plan");
   const shared = useSharedRecords(vault);
   const { write: writeShared, loaded: sharedLoaded, pulled: sharedPulled } = shared;
   // 서버와 마지막으로 맞춘 계획(JSON). 같은 내용을 다시 보내거나, 보낸 걸 다시 덮어쓰지 않으려고 둔다.
@@ -388,6 +393,7 @@ export default function Home() {
     const [a, b] = state.people;
     return {
       saving: Math.round(a.monthlyDeposit + a.monthlyEmergency + b.monthlyDeposit + b.monthlyEmergency + state.plan.housingSubscription),
+      house: Math.round(state.house.monthlySaving),
       invest: Math.round(a.monthlyInvest + a.monthlyPension + b.monthlyInvest + b.monthlyPension),
       fixed: Math.round(result.housingExpense),
       living: Math.round(
@@ -397,7 +403,7 @@ export default function Home() {
       allowance: [Math.round(result.personal[0].cash), Math.round(result.personal[1].cash)],
       threshold: 100_000,
     };
-  }, [result, state.people, state.plan.housingSubscription]);
+  }, [result, state.people, state.plan.housingSubscription, state.house.monthlySaving]);
   const names: [string, string] = [state.people[0].name || "A", state.people[1].name || "B"];
 
   const updatePerson = (index: 0 | 1, patch: Partial<Person>) => {
@@ -464,6 +470,20 @@ export default function Home() {
               <button className="primary" onClick={() => setTab("connect")}>연결하러 가기</button>
             </section>
           )}
+        </div>
+      )}
+
+      {tab === "house" && (
+        <div className="layout">
+          <HousingBoard
+            house={state.house}
+            moveDate={state.house.moveDate || defaultMoveDate()}
+            onChange={(patch) => setState((current) => ({ ...current, house: { ...current.house, ...patch } }))}
+            annualIncome={state.people[0].annualGross + state.people[1].annualGross}
+            currentAssets={state.plan.currentAssets}
+            monthlyNet={result.totalNet}
+            unassigned={result.householdRemaining}
+          />
         </div>
       )}
 
@@ -711,6 +731,7 @@ export default function Home() {
 
       <nav className="tabbar" aria-label="화면 바꾸기">
         <button className={tab === "month" ? "active" : ""} onClick={() => setTab("month")}><span>✓</span>이번 달</button>
+        <button className={tab === "house" ? "active" : ""} onClick={() => setTab("house")}><span>⌂</span>집 마련</button>
         <button className={tab === "plan" ? "active" : ""} onClick={() => setTab("plan")}><span>₩</span>계획</button>
         <button className={tab === "connect" ? "active" : ""} onClick={() => setTab("connect")}><span>⇄</span>연결</button>
       </nav>

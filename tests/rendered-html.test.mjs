@@ -32,6 +32,7 @@ test("신혼부부 자산 플래너 첫 화면을 서버 렌더링한다", async
   assert.match(html, /전기요금/);
   assert.match(html, /이 속도로 모으면/);
   assert.match(html, /이번 달/);
+  assert.match(html, /집 마련/);
   assert.match(html, /rel="manifest" href="[^"]*\/manifest\.webmanifest"/);
   assert.match(html, /serviceWorker/);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton/i);

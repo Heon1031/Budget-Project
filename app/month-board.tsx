@@ -7,6 +7,7 @@ import { MoneyField, signedWon, won } from "./fields";
 
 export type PromiseAmounts = {
   saving: number;
+  house: number;
   invest: number;
   fixed: number;
   living: number;
@@ -27,6 +28,7 @@ export type Expense = {
 };
 
 export const promiseId = (month: string) => `promise:${month}`;
+const transferId = (month: string) => `transfer:${month}`;
 const newExpenseId = () =>
   `expense:${Array.from(crypto.getRandomValues(new Uint8Array(9)), (byte) => byte.toString(36).padStart(2, "0")).join("")}`;
 
@@ -51,11 +53,15 @@ function daysLeft(month: string) {
   return lastDay - new Date().getDate() + 1;
 }
 
+// 집 목돈 칸이 생기기 전에 저장한 약속은 0으로 본다.
+const normalize = <T extends PromiseAmounts>(value: T | undefined): T | undefined =>
+  value ? { ...value, house: Number.isFinite(value.house) ? value.house : 0 } : undefined;
+
 const promiseTotal = (amounts: PromiseAmounts) =>
-  amounts.saving + amounts.invest + amounts.fixed + amounts.living + amounts.allowance[0] + amounts.allowance[1];
+  amounts.saving + amounts.house + amounts.invest + amounts.fixed + amounts.living + amounts.allowance[0] + amounts.allowance[1];
 
 const sameAmounts = (a: PromiseAmounts, b: PromiseAmounts) =>
-  a.saving === b.saving && a.invest === b.invest && a.fixed === b.fixed && a.living === b.living &&
+  a.saving === b.saving && a.house === b.house && a.invest === b.invest && a.fixed === b.fixed && a.living === b.living &&
   a.allowance[0] === b.allowance[0] && a.allowance[1] === b.allowance[1] && a.threshold === b.threshold;
 
 // 쉼표가 든 칸은 엑셀에서 칸이 나뉘지 않게 따옴표로 감싼다. =, + 로 시작하면 수식으로 읽히지 않게 앞에 ' 를 붙인다.
@@ -91,8 +97,9 @@ export function MonthBoard({
   totalNet: number;
 }) {
   const [month, setMonth] = useState(currentMonth);
-  const saved = records.get(promiseId(month)) as MonthPromise | undefined;
-  const previous = records.get(promiseId(shiftMonth(month, -1))) as MonthPromise | undefined;
+  const saved = normalize(records.get(promiseId(month)) as MonthPromise | undefined);
+  const previous = normalize(records.get(promiseId(shiftMonth(month, -1))) as MonthPromise | undefined);
+  const transfers = (records.get(transferId(month)) as Record<string, boolean> | undefined) ?? {};
   const [draft, setDraft] = useState<PromiseAmounts | null>(null);
   const [editing, setEditing] = useState(false);
 
@@ -142,7 +149,8 @@ export function MonthBoard({
       ["둘이자산", `${month} 기록`],
       [],
       ["약속", "금액"],
-      ["저축", shown.saving],
+      ["비상금·저축", shown.saving],
+      ["집 목돈", shown.house],
       ["투자", shown.invest],
       ["고정 지출(주거·대출·공과금)", shown.fixed],
       ["공동 생활비", shown.living],
@@ -162,7 +170,7 @@ export function MonthBoard({
 
   return (
     <div className="content">
-      <section className="card month-card">
+      <section className="card month-card" style={{ order: promise ? 3 : 0 }}>
         <div className="month-nav">
           <button aria-label="이전 달" onClick={() => { setMonth(shiftMonth(month, -1)); setDraft(null); setEditing(false); }}>‹</button>
           <h2>{Number(month.slice(5))}월 약속</h2>
@@ -181,7 +189,8 @@ export function MonthBoard({
 
         {!editing && promise ? (
           <div className="promise-list">
-            <p><span>저축</span><b>{won(promise.saving)}</b></p>
+            <p><span>비상금·저축</span><b>{won(promise.saving)}</b></p>
+            <p><span>집 목돈 <small>원금 보장 통장</small></span><b>{won(promise.house)}</b></p>
             <p><span>투자</span><b>{won(promise.invest)}</b></p>
             <p><span>고정 지출 <small>주거·대출·공과금</small></span><b>{won(promise.fixed)}</b></p>
             <p><span>공동 생활비</span><b>{won(promise.living)}</b></p>
@@ -191,7 +200,8 @@ export function MonthBoard({
           </div>
         ) : (
           <div className="promise-edit">
-            <MoneyField label="저축" hint="예금·적금·청약·비상금" value={shown.saving} onChange={(saving) => updateDraft({ saving })} />
+            <MoneyField label="비상금·저축" hint="예금·적금·청약·비상금" value={shown.saving} onChange={(saving) => updateDraft({ saving })} />
+            <MoneyField label="집 목돈" hint="1년 안에 쓸 돈 · 원금 보장" value={shown.house} onChange={(house) => updateDraft({ house })} />
             <MoneyField label="투자" hint="주식·펀드·연금" value={shown.invest} onChange={(invest) => updateDraft({ invest })} />
             <MoneyField label="고정 지출" hint="주거·대출·공과금" value={shown.fixed} onChange={(fixed) => updateDraft({ fixed })} />
             <MoneyField label="공동 생활비" hint="식비·문화·여행" value={shown.living} onChange={(living) => updateDraft({ living })} />
@@ -222,6 +232,32 @@ export function MonthBoard({
       </section>
 
       {promise && (
+        <section className="card" style={{ order: 2 }}>
+          <h3 className="card-title">월급날 통장 나누기</h3>
+          <p className="muted small">월급이 들어오면 약속대로 각 통장에 보내고 체크해요. 둘이 같은 화면을 봐요.</p>
+          <ul className="transfer-list">
+            {[
+              { key: "fixed", label: "고정 지출 통장", amount: promise.fixed },
+              { key: "living", label: "공동 생활비 통장", amount: promise.living },
+              { key: "allowance0", label: `${names[0]} 용돈 통장`, amount: promise.allowance[0] },
+              { key: "allowance1", label: `${names[1]} 용돈 통장`, amount: promise.allowance[1] },
+              { key: "saving", label: "비상금·저축 통장", amount: promise.saving },
+              { key: "house", label: "집 목돈 통장", amount: promise.house },
+              { key: "invest", label: "투자 통장", amount: promise.invest },
+            ].filter((item) => item.amount > 0).map((item) => (
+              <li key={item.key} className={transfers[item.key] ? "done" : ""}>
+                <label>
+                  <input type="checkbox" checked={Boolean(transfers[item.key])} onChange={(event) => void write(transferId(month), { ...transfers, [item.key]: event.target.checked })} />
+                  <span>{item.label}</span>
+                  <b>{won(item.amount)}</b>
+                </label>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {promise && (
         <LivingTracker
           key={month}
           month={month}
@@ -236,7 +272,7 @@ export function MonthBoard({
         />
       )}
 
-      <button className="export-button" onClick={exportMonth}>{Number(month.slice(5))}월 기록 엑셀로 내보내기</button>
+      <button className="export-button" style={{ order: 4 }} onClick={exportMonth}>{Number(month.slice(5))}월 기록 엑셀로 내보내기</button>
     </div>
   );
 }
@@ -293,7 +329,7 @@ function LivingTracker({
   };
 
   return (
-    <section className="card living-card">
+    <section className="card living-card" style={{ order: 1 }}>
       <div className="living-head">
         <span>남은 공동 생활비</span>
         <strong className={remaining < 0 ? "negative" : ""}>{signedWon(remaining)}</strong>

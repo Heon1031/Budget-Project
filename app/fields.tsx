@@ -52,3 +52,12 @@ export function RateInput({ value, onChange }: { value: number; onChange: (value
     />
   );
 }
+
+// 큰 금액을 「1억 5,000만원」처럼 읽기 쉽게 쓴다.
+export function koreanWon(value: number) {
+  const man = Math.round(Math.abs(value) / 10_000);
+  const eok = Math.floor(man / 10_000);
+  const rest = man % 10_000;
+  const text = eok > 0 ? `${eok}억${rest > 0 ? ` ${rest.toLocaleString("ko-KR")}만` : ""}원` : `${rest.toLocaleString("ko-KR")}만원`;
+  return value < 0 ? `-${text}` : text;
+}
