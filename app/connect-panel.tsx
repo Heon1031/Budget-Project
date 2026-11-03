@@ -5,7 +5,7 @@ import { Link2, TriangleAlert } from "lucide-react";
 import { checkVault, registerHousehold, type SyncStatus } from "./lib/sync";
 import { deriveVault, isHouseholdId, newHouseholdId, saveVault, type Vault } from "./lib/vault";
 
-// 두 폰 연결. 한 사람이 「새로 시작」으로 연결 코드를 만들고, 다른 사람이 그 코드와 같은 비밀번호로 들어온다.
+// 두 폰 연결. 둘 중 아무 폰에서 「처음 시작」으로 연결 코드를 만들고, 다른 폰이 그 코드와 같은 비밀번호로 연결한다(누가 주인인 구조가 아님).
 
 const MIN_PASSPHRASE = 10;
 
@@ -92,8 +92,8 @@ export function ConnectPanel({
       <h2>둘이자산 연결</h2>
       <p className="badge warn"><TriangleAlert size={14} /> 비밀번호를 잊으면 기록을 되살릴 수 없어요</p>
       <div className="toggle-group wide">
-        <button className={mode === "new" ? "active" : ""} onClick={() => setMode("new")}>새로 시작</button>
-        <button className={mode === "join" ? "active" : ""} onClick={() => setMode("join")}>연결 코드로 들어가기</button>
+        <button className={mode === "new" ? "active" : ""} onClick={() => setMode("new")}>처음 시작</button>
+        <button className={mode === "join" ? "active" : ""} onClick={() => setMode("join")}>상대 폰과 연결</button>
       </div>
       <div className="toggle-group wide">
         <button className={me === 0 ? "active" : ""} onClick={() => setMe(0)}>나는 {names[0]}</button>
@@ -116,7 +116,7 @@ export function ConnectPanel({
         </label>
       )}
       {message && <p className="verdict no">{message}</p>}
-      <button className="primary" disabled={busy} onClick={() => void submit()}>{busy ? "열쇠 만드는 중…" : mode === "new" ? "연결 코드 만들기" : "들어가기"}</button>
+      <button className="primary" disabled={busy} onClick={() => void submit()}>{busy ? "열쇠 만드는 중…" : mode === "new" ? "우리 집 만들기" : "연결하기"}</button>
     </section>
   );
 }

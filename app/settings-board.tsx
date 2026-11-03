@@ -32,7 +32,7 @@ export function SettingsBoard({
         return (
           <section key={index} className={`card person-${index + 1}`}>
             <div className="person-title">
-              <span>{index === 0 ? "A" : "B"}</span>
+              <span>{(person.name || (index === 0 ? "남편" : "아내")).slice(0, 1)}</span>
               <input aria-label={`${index + 1}번째 사람 이름`} value={person.name} onChange={(event) => onPerson(i, { name: event.target.value })} />
             </div>
             <MoneyField label="세전 연봉" value={person.annualGross} onChange={(annualGross) => onPerson(i, { annualGross })} />

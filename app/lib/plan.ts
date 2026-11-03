@@ -78,7 +78,7 @@ export const RULES = {
 export const initialState: AppState = {
   people: [
     {
-      name: "나",
+      name: "남편",
       annualGross: 52_000_000,
       monthlyNonTaxable: 200_000,
       actualNet: 0,
@@ -95,7 +95,7 @@ export const initialState: AppState = {
       targetSavings: 50,
     },
     {
-      name: "배우자",
+      name: "아내",
       annualGross: 40_000_000,
       monthlyNonTaxable: 200_000,
       actualNet: 0,
@@ -165,8 +165,8 @@ export function restoreState(saved: unknown): AppState {
   const people = Array.isArray(data.people) ? data.people : [];
   return {
     people: [
-      mergeDefaults(initialState.people[0], people[0]),
-      mergeDefaults(initialState.people[1], people[1]),
+      renameDefault(mergeDefaults(initialState.people[0], people[0]), "나", "남편"),
+      renameDefault(mergeDefaults(initialState.people[1], people[1]), "배우자", "아내"),
     ],
     plan: mergeDefaults(initialState.plan, data.plan),
     house: mergeDefaults(initialHouse, data.house),
@@ -177,6 +177,9 @@ export function restoreState(saved: unknown): AppState {
     shareRule: data.shareRule === "half" ? "half" : "income",
   };
 }
+
+// 예전 기본 이름(나 · 배우자)은 「누가 주인」처럼 읽혀서 남편 · 아내로 바꾼다. 직접 바꾼 이름은 그대로 둔다.
+const renameDefault = (person: Person, oldName: string, newName: string) => (person.name === oldName ? { ...person, name: newName } : person);
 
 const isOwner = (value: unknown): value is Owner => value === 0 || value === 1 || value === "both";
 const money = (value: unknown) => (typeof value === "number" && Number.isFinite(value) ? Math.max(0, Math.round(value)) : 0);
