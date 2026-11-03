@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { MoneyField, won } from "./fields";
+import { CalendarDays, Plus, User, Users } from "lucide-react";
+import { Bar, CATEGORY_ICONS } from "./charts";
+import { MoneyField, shortWon, won } from "./fields";
 import { FIXED_CATEGORIES, newId, type FixedCategory, type FixedCost, type Owner } from "./lib/plan";
 
 // 고정지출: 매달 나가는 돈을 각자 · 공동으로 한 번 적어 둔다. 금액이 바뀔 때만 고친다.
@@ -20,6 +22,10 @@ export function FixedBoard({
   const [editing, setEditing] = useState<FixedCost | null>(null);
   const ownerName = (owner: Owner) => (owner === "both" ? "공동" : names[owner]);
   const total = (owner: Owner) => items.filter((item) => item.owner === owner).reduce((sum, item) => sum + item.amount, 0);
+  const grand = items.reduce((sum, item) => sum + item.amount, 0);
+  const byCategory = FIXED_CATEGORIES.map((category) => [category, items.filter((item) => item.category === category).reduce((sum, item) => sum + item.amount, 0)] as const)
+    .filter(([, amount]) => amount > 0)
+    .sort((a, b) => b[1] - a[1]);
 
   const save = (item: FixedCost) => {
     const exists = items.some((current) => current.id === item.id);
@@ -30,35 +36,62 @@ export function FixedBoard({
   return (
     <div className="content">
       <section className="summary-main">
-        <span>매달 나가는 고정지출</span>
-        <strong>{won(items.reduce((sum, item) => sum + item.amount, 0))}</strong>
-        <small>{OWNERS.map((owner) => `${ownerName(owner)} ${won(total(owner))}`).join(" · ")}</small>
+        <span className="hero-label"><CalendarDays size={16} /> 매달 고정지출</span>
+        <strong>{won(grand)}</strong>
+        <div className="hero-chips">
+          {OWNERS.map((owner) => {
+            const Icon = owner === "both" ? Users : User;
+            return <span key={String(owner)}><Icon size={14} /> {ownerName(owner)} {shortWon(total(owner))}</span>;
+          })}
+        </div>
       </section>
+
+      {byCategory.length > 0 && (
+        <section className="card">
+          <ul className="cat-bars">
+            {byCategory.map(([category, amount]) => {
+              const Icon = CATEGORY_ICONS[category];
+              return (
+                <li key={category}>
+                  <span className="icon-dot"><Icon size={16} /></span>
+                  <span className="cat-name">{category}</span>
+                  <Bar value={amount} max={byCategory[0][1]} />
+                  <b>{shortWon(amount)}</b>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
 
       {OWNERS.map((owner) => {
         const list = items.filter((item) => item.owner === owner).sort((a, b) => a.day - b.day);
+        const OwnerIcon = owner === "both" ? Users : User;
         return (
           <section key={String(owner)} className="card">
             <div className="card-head">
-              <h3 className="card-title">{ownerName(owner)}</h3>
+              <h3 className="card-title"><OwnerIcon size={18} /> {ownerName(owner)}</h3>
               <b>{won(total(owner))}</b>
             </div>
-            {list.length === 0 && <p className="muted small">아직 없어요.</p>}
             <ul className="row-list">
-              {list.map((item) => (
-                <li key={item.id}>
-                  <button onClick={() => setEditing(item)}>
-                    <span>
-                      <b>{item.name}</b>
-                      <small>{item.category} · 매달 {item.day}일</small>
-                    </span>
-                    <strong>{won(item.amount)}</strong>
-                  </button>
-                </li>
-              ))}
+              {list.map((item) => {
+                const Icon = CATEGORY_ICONS[item.category];
+                return (
+                  <li key={item.id}>
+                    <button onClick={() => setEditing(item)}>
+                      <span className="icon-dot"><Icon size={16} /></span>
+                      <span>
+                        <b>{item.name}</b>
+                        <small>매달 {item.day}일</small>
+                      </span>
+                      <strong>{won(item.amount)}</strong>
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
-            <button className="text-button" onClick={() => setEditing({ id: newId("f"), name: "", amount: 0, owner, category: owner === "both" ? "주거" : "구독", day: 1 })}>
-              + {ownerName(owner)} 고정지출 추가
+            <button className="add-button" onClick={() => setEditing({ id: newId("f"), name: "", amount: 0, owner, category: owner === "both" ? "주거" : "구독", day: 1 })}>
+              <Plus size={16} /> 추가
             </button>
           </section>
         );
@@ -116,7 +149,9 @@ function FixedEditor({
         </div>
         <div className="chip-row">
           {FIXED_CATEGORIES.map((category: FixedCategory) => (
-            <button key={category} className={draft.category === category ? "active" : ""} onClick={() => update({ category })}>{category}</button>
+            <button key={category} className={draft.category === category ? "active" : ""} onClick={() => update({ category })}>
+              {(() => { const Icon = CATEGORY_ICONS[category]; return <Icon size={14} />; })()} {category}
+            </button>
           ))}
         </div>
         <label className="field">

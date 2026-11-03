@@ -13,3 +13,4 @@ description: 둘이자산(Budget-Project) 화면·문구·레이아웃을 만들
 6. 문구: 쉬운 한국어, 존댓말 「~해요」. 전문용어는 괄호로 풀이. 음수는 「○원 부족」. 추정 숫자에는 「추정」.
 7. 금액 입력은 `app/fields.tsx`의 `MoneyField`, 비율은 `RateInput`을 쓴다.
 8. 확인: 미리보기를 모바일(375×812), 밝은 · 어두운 모드 둘 다로 띄우고 `get_page_text` · 스크린샷으로 본다. 가로 넘침은 `document.documentElement.scrollWidth`로 잰다.
+9. 글보다 그림: 아이콘(lucide-react)과 `app/charts.tsx` 그래프를 먼저 쓰고, 설명은 한 줄 · 나머지는 접기(`details.explain`). 자세한 규칙은 `docs/design.md` 「글보다 그림」.

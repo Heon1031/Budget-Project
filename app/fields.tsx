@@ -61,3 +61,12 @@ export function koreanWon(value: number) {
   const text = eok > 0 ? `${eok}억${rest > 0 ? ` ${rest.toLocaleString("ko-KR")}만` : ""}원` : `${rest.toLocaleString("ko-KR")}만원`;
   return value < 0 ? `-${text}` : text;
 }
+
+// 그래프 옆에 붙이는 짧은 금액: 「1.9억」「128만」.
+export function shortWon(value: number) {
+  const abs = Math.abs(value);
+  const sign = value < 0 ? "-" : "";
+  if (abs >= 100_000_000) return `${sign}${(abs / 100_000_000).toFixed(abs >= 1_000_000_000 ? 0 : 1).replace(/\.0$/, "")}억`;
+  if (abs >= 10_000) return `${sign}${Math.round(abs / 10_000).toLocaleString("ko-KR")}만`;
+  return `${sign}${Math.round(abs).toLocaleString("ko-KR")}원`;
+}

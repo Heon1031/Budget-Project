@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { PiggyBank, Target, Users } from "lucide-react";
 import { MoneyField, RateInput, won } from "./fields";
 import { RATIO_PRESETS, type AppState, type Person, type calculateSalary } from "./lib/plan";
 
@@ -40,7 +41,7 @@ export function SettingsBoard({
               <span>{calc.isActual ? "급여명세서 실수령액" : "예상 월 실수령액 (추정)"}</span>
               <strong>{won(calc.net)}</strong>
             </div>
-            <MoneyField label="실제 실수령액" hint="알면 넣어 주세요 · 더 정확해요" value={person.actualNet} onChange={(actualNet) => onPerson(i, { actualNet })} />
+            <MoneyField label="실제 실수령액" hint="선택" value={person.actualNet} onChange={(actualNet) => onPerson(i, { actualNet })} />
             <button className="breakdown-button" onClick={() => setOpenBreakdown(openBreakdown === i ? null : i)}>
               공제 내역 {openBreakdown === i ? "접기 −" : "보기 +"}
             </button>
@@ -54,14 +55,14 @@ export function SettingsBoard({
                 <p><span>지방소득세(추정)</span><b>-{won(calc.localIncomeTax)}</b></p>
               </div>
             )}
-            <h4 className="sub-title">매달 먼저 떼는 돈</h4>
+            <h4 className="sub-title"><PiggyBank size={16} /> 먼저 떼는 돈</h4>
             <div className="form-grid">
               <MoneyField label="예금·적금" value={person.monthlyDeposit} onChange={(monthlyDeposit) => onPerson(i, { monthlyDeposit })} />
               <MoneyField label="비상금" value={person.monthlyEmergency} onChange={(monthlyEmergency) => onPerson(i, { monthlyEmergency })} />
               <MoneyField label="주식·펀드" value={person.monthlyInvest} onChange={(monthlyInvest) => onPerson(i, { monthlyInvest })} />
               <MoneyField label="연금·IRP" value={person.monthlyPension} onChange={(monthlyPension) => onPerson(i, { monthlyPension })} />
             </div>
-            <h4 className="sub-title">내 월급 나누기 목표</h4>
+            <h4 className="sub-title"><Target size={16} /> 나누기 목표</h4>
             <div className="chip-row">
               {RATIO_PRESETS.map((preset) => {
                 const active = person.targetNeeds === preset.needs && person.targetWants === preset.wants && person.targetSavings === preset.savings;
@@ -73,32 +74,29 @@ export function SettingsBoard({
               })}
             </div>
             <div className="rate-grid ratio-grid">
-              <label><span>꼭 필요한 돈</span><div><RateInput value={person.targetNeeds} onChange={(targetNeeds) => onPerson(i, { targetNeeds: Math.min(100, targetNeeds) })} /><b>%</b></div></label>
-              <label><span>하고 싶은 돈</span><div><RateInput value={person.targetWants} onChange={(targetWants) => onPerson(i, { targetWants: Math.min(100, targetWants) })} /><b>%</b></div></label>
-              <label><span>모으는 돈</span><div><RateInput value={person.targetSavings} onChange={(targetSavings) => onPerson(i, { targetSavings: Math.min(100, targetSavings) })} /><b>%</b></div></label>
+              <label><span><i className="dot needs" />필요</span><div><RateInput value={person.targetNeeds} onChange={(targetNeeds) => onPerson(i, { targetNeeds: Math.min(100, targetNeeds) })} /><b>%</b></div></label>
+              <label><span><i className="dot wants" />하고 싶은</span><div><RateInput value={person.targetWants} onChange={(targetWants) => onPerson(i, { targetWants: Math.min(100, targetWants) })} /><b>%</b></div></label>
+              <label><span><i className="dot savings" />모으기</span><div><RateInput value={person.targetSavings} onChange={(targetSavings) => onPerson(i, { targetSavings: Math.min(100, targetSavings) })} /><b>%</b></div></label>
             </div>
             {Math.round(person.targetNeeds + person.targetWants + person.targetSavings) !== 100 && (
               <p className="verdict talk">세 칸을 더하면 {Math.round(person.targetNeeds + person.targetWants + person.targetSavings)}%예요. 100%가 되게 맞춰 주세요.</p>
             )}
-            <p className="muted small">
-              꼭 필요한 돈: 주거 · 생활 · 통신 · 보험 · 교통 · 대출. 하고 싶은 돈: 학원 · 운동 · 취미 · 구독과 마음 편히 쓸 돈. 모으는 돈: 저축 · 투자 · 집 목돈 · 청약(공동 몫은 나누는 비율대로).
-            </p>
+
           </section>
         );
       })}
 
       <section className="card">
-        <h3 className="card-title">둘이 함께</h3>
-        <MoneyField label="지금까지 모은 자산" hint="집 마련 계산에 써요" value={state.plan.currentAssets} onChange={(currentAssets) => onState({ plan: { ...state.plan, currentAssets } })} />
+        <h3 className="card-title"><Users size={18} /> 둘이 함께</h3>
+        <MoneyField label="지금까지 모은 자산" value={state.plan.currentAssets} onChange={(currentAssets) => onState({ plan: { ...state.plan, currentAssets } })} />
         <MoneyField label="매달 청약 저축" value={state.plan.housingSubscription} onChange={(housingSubscription) => onState({ plan: { ...state.plan, housingSubscription } })} />
         <div className="field">
-          <span>공동 몫 나누는 방식 <small>공동 고정지출 · 집 목돈 · 청약</small></span>
+          <span>공동 몫 나누기</span>
           <div className="toggle-group wide" style={{ marginTop: 0 }}>
-            <button className={state.shareRule === "income" ? "active" : ""} onClick={() => onState({ shareRule: "income" })}>월급 비율대로</button>
+            <button className={state.shareRule === "income" ? "active" : ""} onClick={() => onState({ shareRule: "income" })}>월급 비율</button>
             <button className={state.shareRule === "half" ? "active" : ""} onClick={() => onState({ shareRule: "half" })}>반씩</button>
           </div>
         </div>
-        <p className="muted small">실수령액은 2026년 4대보험 요율과 소득세 구간으로 계산한 추정이에요. 급여명세서 금액을 넣으면 그 값을 써요.</p>
       </section>
 
       {children}

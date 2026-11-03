@@ -1,13 +1,13 @@
 "use client";
 
-import { koreanWon, won } from "./fields";
+import { CalendarDays, Check, ChevronRight, House, PiggyBank, TrendingUp, TriangleAlert, Wallet } from "lucide-react";
+import { Donut, GrowthBars, Legend, Ring, type Segment } from "./charts";
+import { koreanWon, shortWon, won } from "./fields";
 import type { Flow } from "./lib/plan";
 
-// 첫 화면: 이대로 살면 1년에 얼마 모이는지, 이번 달 각자 마음 편히 쓸 돈, 내 집까지의 거리.
+// 첫 화면: 1년 뒤 모일 돈(막대), 각자 월급이 어디로 가는지(도넛), 내 집까지(고리).
 
 type Targets = { targetNeeds: number; targetWants: number; targetSavings: number };
-
-const pct = (part: number, whole: number) => (whole > 0 ? (part / whole) * 100 : 0);
 
 export function FlowBoard({
   flow,
@@ -22,101 +22,69 @@ export function FlowBoard({
   house: { daysLeft: number; have: number; need: number };
   onOpen: (tab: "fixed" | "wish" | "house" | "settings") => void;
 }) {
-  const short = flow.people.map((person) => person.free < 0);
   const parts = [
-    { label: "저축", value: flow.people[0].saving + flow.people[1].saving + flow.subscription },
-    { label: "투자", value: flow.people[0].investing + flow.people[1].investing },
-    { label: "집 목돈", value: flow.houseMonthly },
+    { icon: PiggyBank, label: "저축", value: flow.people[0].saving + flow.people[1].saving + flow.subscription },
+    { icon: TrendingUp, label: "투자", value: flow.people[0].investing + flow.people[1].investing },
+    { icon: House, label: "집", value: flow.houseMonthly },
   ];
 
   return (
     <div className="content">
-      <section className="summary-main">
-        <span>이대로 살면 1년 뒤</span>
-        <strong>{koreanWon(flow.yearSaved)} 모여요</strong>
-        <small>매달 {won(flow.monthlySaved)}씩 · {parts.filter((part) => part.value > 0).map((part) => `${part.label} ${koreanWon(part.value)}`).join(" · ")}</small>
+      <section className="summary-main hero">
+        <span className="hero-label"><PiggyBank size={16} /> 1년 뒤 모이는 돈</span>
+        <strong>{koreanWon(flow.yearSaved)}</strong>
+        <GrowthBars monthly={flow.monthlySaved} />
+        <div className="hero-chips">
+          {parts.map(({ icon: Icon, label, value }) => (
+            <span key={label}><Icon size={14} /> {label} {shortWon(value)}</span>
+          ))}
+        </div>
       </section>
 
       <section className="card">
-        <h3 className="card-title">이번 달 마음 편히 쓸 돈</h3>
-        <div className="free-grid">
-          {flow.people.map((person, index) => (
-            <div key={index} className={`free-card person-${index + 1} ${short[index] ? "short" : ""}`}>
-              <span>{names[index]}</span>
-              <strong>{short[index] ? `${won(-person.free)} 부족` : won(person.free)}</strong>
-              <small>하루 {won(Math.max(0, person.free) / 30)}꼴</small>
-            </div>
-          ))}
+        <h3 className="card-title"><Wallet size={18} /> 이번 달 쓸 돈</h3>
+        <div className="person-donuts">
+          {flow.people.map((person, index) => {
+            const segments: Segment[] = [
+              { label: "필요", value: person.needs, color: "var(--chart-needs)" },
+              { label: "하고 싶은", value: Math.max(0, person.wants), color: "var(--chart-wants)" },
+              { label: "모으기", value: person.savings, color: "var(--chart-savings)" },
+            ];
+            const savingsPct = person.net > 0 ? (person.savings / person.net) * 100 : 0;
+            const gap = targets[index].targetSavings - savingsPct;
+            const short = person.free < 0;
+            return (
+              <div key={index} className={`person-donut person-${index + 1}`}>
+                <b className="who">{names[index]}</b>
+                <Donut segments={segments} center={short ? `-${shortWon(-person.free)}` : shortWon(person.free)} caption={short ? "부족" : "쓸 돈"} />
+                <Legend segments={segments} total={person.net} />
+                <p className={`badge ${short ? "bad" : gap > 1 ? "warn" : "good"}`}>
+                  {short ? <TriangleAlert size={14} /> : gap > 1 ? <TriangleAlert size={14} /> : <Check size={14} />}
+                  {short ? "쓸 돈 부족" : gap > 1 ? `+${shortWon((gap / 100) * person.net)} 더 모으기` : "목표 달성"}
+                </p>
+              </div>
+            );
+          })}
         </div>
-        <ul className="flow-lines">
+        <details className="explain">
+          <summary>계산 보기</summary>
           {flow.people.map((person, index) => (
-            <li key={index}>
-              <b>{names[index]}</b>
-              <span>
-                월급 {won(person.net)} − 내 고정지출 {won(person.ownFixed)} − 공동 몫 {won(person.jointShare)} − 저축·투자 {won(person.saving + person.investing)}
-              </span>
-            </li>
+            <p key={index}>
+              <b>{names[index]}</b> 월급 {won(person.net)} − 내 고정 {won(person.ownFixed)} − 공동 몫 {won(person.jointShare)} − 저축·투자 {won(person.saving + person.investing)} = <b>{won(person.free)}</b>
+            </p>
           ))}
-        </ul>
-        {(short[0] || short[1]) && (
-          <p className="verdict no">쓸 돈이 마이너스예요. 고정지출을 줄이거나 저축·투자 금액을 조정해야 해요.</p>
-        )}
-        <p className="muted small">
-          공동 몫 = 공동 고정지출 {won(flow.jointFixed)} + 집 목돈 {won(flow.houseMonthly)}
-          {flow.subscription > 0 ? ` + 청약 ${won(flow.subscription)}` : ""}을 {flow.shares[0] === 0.5 ? "반씩" : `월급 비율(${Math.round(flow.shares[0] * 100)}:${Math.round(flow.shares[1] * 100)})로`} 나눈 돈
-        </p>
+          <p>공동 몫 = 공동 고정 {won(flow.jointFixed)} + 집 {won(flow.houseMonthly)}{flow.subscription > 0 ? ` + 청약 ${won(flow.subscription)}` : ""}, {flow.shares[0] === 0.5 ? "반씩" : `월급 비율 ${Math.round(flow.shares[0] * 100)}:${Math.round(flow.shares[1] * 100)}`}</p>
+        </details>
       </section>
 
-      <section className="card">
-        <div className="card-head">
-          <h3 className="card-title">월급 나누기</h3>
-          <button className="text-button" onClick={() => onOpen("settings")}>목표 바꾸기</button>
-        </div>
-        {flow.people.map((person, index) => {
-          const needs = pct(person.needs, person.net);
-          const wants = pct(Math.max(0, person.wants), person.net);
-          const savings = pct(person.savings, person.net);
-          const target = targets[index];
-          const gap = target.targetSavings - savings;
-          return (
-            <div key={index} className="ratio-row">
-              <div className="ratio-head">
-                <b>{names[index]}</b>
-                <small>목표 {target.targetNeeds} · {target.targetWants} · {target.targetSavings}</small>
-              </div>
-              <div className="ratio-bar" aria-hidden="true">
-                <span className="needs" style={{ width: `${needs}%` }} />
-                <span className="wants" style={{ width: `${wants}%` }} />
-                <span className="savings" style={{ width: `${savings}%` }} />
-              </div>
-              <div className="ratio-legend">
-                <span><i className="needs" />꼭 필요 {Math.round(needs)}%</span>
-                <span><i className="wants" />하고 싶은 {Math.round(wants)}%</span>
-                <span><i className="savings" />모으기 {Math.round(savings)}%</span>
-              </div>
-              <p className={`ratio-note ${gap > 1 ? "warn" : "good"}`}>
-                {gap > 1
-                  ? `목표보다 ${Math.round(gap)}%p 덜 모아요 · 매달 ${won((gap / 100) * person.net)} 더 떼면 맞아요`
-                  : savings - target.targetSavings > 1
-                    ? `목표보다 ${Math.round(savings - target.targetSavings)}%p 더 모으고 있어요`
-                    : "목표만큼 모으고 있어요"}
-                {needs - target.targetNeeds > 1 ? ` · 꼭 필요한 돈이 목표보다 ${Math.round(needs - target.targetNeeds)}%p 많아요` : ""}
-              </p>
-            </div>
-          );
-        })}
-      </section>
-
-      <button className="summary-house" onClick={() => onOpen("house")}>
-        <span>내 집까지 {house.daysLeft > 0 ? `D-${house.daysLeft}` : "잔금일 지남"}</span>
-        <b>{koreanWon(house.have)} <small>모일 예정 · 필요 {koreanWon(house.need)}</small></b>
-        <i className="meter"><span style={{ width: `${house.need > 0 ? Math.min(100, (house.have / house.need) * 100) : 0}%` }} /></i>
+      <button className="house-row" onClick={() => onOpen("house")}>
+        <Ring ratio={house.need > 0 ? house.have / house.need : 0}>{house.need > 0 ? Math.min(100, Math.round((house.have / house.need) * 100)) : 0}%</Ring>
+        <span>
+          <b><House size={16} /> 내 집</b>
+          <small><CalendarDays size={13} /> {house.daysLeft > 0 ? `D-${house.daysLeft}` : "잔금일 지남"} · {shortWon(house.have)} / {shortWon(house.need)}</small>
+        </span>
+        <ChevronRight size={20} />
       </button>
-
-      <div className="quick-links">
-        <button onClick={() => onOpen("wish")}><b>해볼까?</b><small>피부과, 헬스 등록… 지금 해도 될지 보기</small></button>
-        <button onClick={() => onOpen("fixed")}><b>고정지출</b><small>매달 나가는 돈 정리하기</small></button>
-      </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { House, ListChecks, Settings, Sparkles, Waves, type LucideIcon } from "lucide-react";
 import { ConnectPanel } from "./connect-panel";
 import { FixedBoard } from "./fixed-board";
 import { FlowBoard } from "./flow-board";
@@ -22,12 +23,12 @@ import { WishBoard } from "./wish-board";
 
 type Tab = "flow" | "fixed" | "wish" | "house" | "settings";
 
-const TABS: { id: Tab; icon: string; label: string }[] = [
-  { id: "flow", icon: "◎", label: "흐름" },
-  { id: "fixed", icon: "≡", label: "고정지출" },
-  { id: "wish", icon: "✦", label: "해볼까" },
-  { id: "house", icon: "⌂", label: "내 집" },
-  { id: "settings", icon: "⚙", label: "설정" },
+const TABS: { id: Tab; icon: LucideIcon; label: string }[] = [
+  { id: "flow", icon: Waves, label: "흐름" },
+  { id: "fixed", icon: ListChecks, label: "고정지출" },
+  { id: "wish", icon: Sparkles, label: "해볼까" },
+  { id: "house", icon: House, label: "내 집" },
+  { id: "settings", icon: Settings, label: "설정" },
 ];
 
 export default function Home() {
@@ -178,13 +179,13 @@ export default function Home() {
 
       <footer>
         <span>둘이자산 · 먼저 떼고, 남은 돈은 마음 편히</span>
-        <p>계산은 참고용 추정이에요. 실제 자산은 은행 · 자산관리 앱에서 확인하세요.</p>
+        <p>참고용 추정이에요</p>
       </footer>
 
       <nav className="tabbar" aria-label="화면 바꾸기">
         {TABS.map((item) => (
           <button key={item.id} className={tab === item.id ? "active" : ""} onClick={() => setTab(item.id)}>
-            <span>{item.icon}</span>{item.label}
+            <item.icon size={22} strokeWidth={tab === item.id ? 2.4 : 1.8} />{item.label}
           </button>
         ))}
       </nav>
