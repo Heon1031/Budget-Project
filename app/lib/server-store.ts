@@ -4,7 +4,7 @@ async function database() {
   return env.DB;
 }
 
-// 서버는 암호화된 글자를 맡아 두고 돌려줄 뿐이다. 내용을 풀 열쇠는 폰에만 있다.
+// 서버는 암호화된 글자를 맡아 두고 돌려줄 뿐이다. 내용을 풀 열쇠는 폰에만 있다(두 폰은 QR로 열쇠를 나눔).
 
 const ID_PATTERN = /^[A-Za-z0-9_-]{22}$/;
 const AUTH_PATTERN = /^[0-9a-f]{64}$/;
@@ -64,13 +64,13 @@ export async function authenticate(householdId: string, auth: string) {
   )
     .bind(householdId)
     .first<{ auth_hash: string; fail_count: number; locked_until: number }>();
-  // 없는 코드와 틀린 비밀번호를 같은 말로 돌려줘서, 어떤 코드가 있는지 알아내지 못하게 한다.
-  if (!row) throw new HttpError(401, "연결 코드나 비밀번호가 맞지 않아요.");
+  // 없는 집과 틀린 확인값을 같은 말로 돌려줘서, 어떤 집이 있는지 알아내지 못하게 한다.
+  if (!row) throw new HttpError(401, "연결 정보가 맞지 않아요. QR을 다시 찍어 주세요.");
 
   const now = Date.now();
   if (row.locked_until > now) {
     const minutes = Math.ceil((row.locked_until - now) / 60_000);
-    throw new HttpError(429, `비밀번호를 여러 번 틀려서 잠겼어요. ${minutes}분 뒤에 다시 해 주세요.`);
+    throw new HttpError(429, `연결 시도가 여러 번 틀려서 잠겼어요. ${minutes}분 뒤에 다시 해 주세요.`);
   }
 
   if (!sameText(await sha256Hex(auth), row.auth_hash)) {
@@ -79,7 +79,7 @@ export async function authenticate(householdId: string, auth: string) {
     await (await database()).prepare("UPDATE households SET fail_count = ?, locked_until = ? WHERE id = ?")
       .bind(locked ? 0 : fails, locked ? now + LOCK_MS : 0, householdId)
       .run();
-    throw new HttpError(401, "연결 코드나 비밀번호가 맞지 않아요.");
+    throw new HttpError(401, "연결 정보가 맞지 않아요. QR을 다시 찍어 주세요.");
   }
 
   if (row.fail_count > 0) {

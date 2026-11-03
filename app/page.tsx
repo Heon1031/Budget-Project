@@ -38,7 +38,7 @@ export default function Home() {
   const [hydrated, setHydrated] = useState(false);
   const [vault, setVault] = useState<Vault | null>(null);
   const [tab, setTab] = useState<Tab>("flow");
-  // 잠금이 켜진 폰은 Face ID · 지문(또는 비밀번호)으로 열기 전까지 기록을 풀지 않는다.
+  // 잠금이 켜진 폰은 Face ID · 지문(안 되면 폰 PIN)으로 열기 전까지 기록을 풀지 않는다.
   const [unlocked, setUnlocked] = useState(false);
   const activeVault = vault && unlocked ? vault : null;
   const shared = useSharedRecords(activeVault);
@@ -155,7 +155,7 @@ export default function Home() {
   if (hydrated && vault && !unlocked) {
     return (
       <main className="gate">
-        <LockScreen vault={vault} onUnlock={() => setUnlocked(true)} />
+        <LockScreen onUnlock={() => setUnlocked(true)} />
       </main>
     );
   }

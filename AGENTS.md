@@ -8,7 +8,7 @@
 - `docs/decisions.md` — 결정 기록 (날짜순)
 
 ## 지킬 것
-- **보안:** 서버로 가는 기록은 반드시 `app/lib/vault.ts`의 `encryptJson`을 거친다. 열쇠는 `extractable: false`, 비밀번호 · 확인값은 localStorage · URL에 두지 않는다. `/api` 응답은 캐시하지 않는다. `npm run check:security`가 이걸 훑는다.
+- **보안:** 서버로 가는 기록은 반드시 `app/lib/vault.ts`의 `encryptJson`을 거친다. 열쇠는 `extractable: false`, 비밀값 · 확인값 · 연결 QR 코드는 localStorage · URL · 로그에 두지 않는다(IndexedDB 금고에만). `/api` 응답은 캐시하지 않는다. `npm run check:security`가 이걸 훑는다.
 - **돈 숫자:** 세율 · 대출 규제 · 요율처럼 바뀌는 숫자는 코드에 흩뿌리지 않고 한곳(`app/lib/housing.ts`의 `RULES`, `app/lib/plan.ts`의 `RULES`)에 두고, `docs/housing.md`에 출처 · 기준일을 적는다. 화면에는 「추정」「확인 필요」를 붙인다.
 - **화면:** 휴대폰(375px) 먼저. 글자 12px 이상, 누르는 곳 44px 이상. 카드 하나에 주 버튼 하나.
 - **말:** 화면 문구는 쉬운 한국어. 전문용어는 처음에 풀어 쓴다(예: DSR → 「연 소득 대비 1년 대출 상환액 비율」).

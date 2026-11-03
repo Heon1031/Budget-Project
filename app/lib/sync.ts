@@ -56,7 +56,7 @@ export async function registerHousehold(vault: Vault) {
   if (!response.ok) throw new Error(await readError(response));
 }
 
-// 연결 코드와 비밀번호가 맞는지 서버에 한 번 물어본다.
+// QR로 받은 연결 정보가 맞는지 서버에 한 번 물어본다.
 export async function checkVault(vault: Vault) {
   const response = await fetch("/api/sync?since=0", { headers: authHeaders(vault), cache: "no-store" });
   if (!response.ok) throw new Error(await readError(response));

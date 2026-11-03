@@ -565,3 +565,22 @@ main.gate > .card { width: 100%; max-width: 420px; }
 .text-button { display: inline-flex; align-items: center; gap: 4px; }
 .lock-badge.small { width: 52px; height: 52px; border-radius: 18px; margin-bottom: 8px; }
 main.gate .connect-card h2 { margin-top: 0; }
+
+/* QR 연결 */
+.start-grid { display: grid; gap: 12px; width: 100%; margin-top: 8px; }
+.start-option { display: grid; gap: 8px; padding: 16px; border-radius: 18px; background: var(--surface-2); }
+.start-option > b { font-size: var(--fs-body); }
+.start-option .toggle-group.wide { margin-top: 0; }
+.start-option button.primary { margin-top: 0; }
+button.primary.ghost-primary { background: var(--brand-weak); color: var(--brand); }
+.paste-box { display: grid; gap: 8px; margin-top: 12px; }
+.paste-box .toggle-group.wide { margin-top: 0; }
+.paste-box button.primary { margin-top: 0; }
+.qr-box { display: grid; justify-items: center; gap: 8px; margin: 8px 0; padding: 16px; border-radius: 18px; background: var(--surface-2); }
+.qr-box small { color: var(--ink-3); font-size: var(--fs-caption); }
+.qr-image { padding: 8px; border-radius: 12px; background: #ffffff; }
+.qr-image svg { display: block; width: 100%; height: 100%; }
+.scanner-video { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 18px; background: #000000; }
+.icon-close { width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: 12px; background: var(--surface-2); color: var(--ink-2); }
+main.gate .connect-card { display: grid; justify-items: center; text-align: center; }
+main.gate .connect-card .start-option { text-align: left; }

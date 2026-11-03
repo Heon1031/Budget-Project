@@ -1,75 +1,41 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { KeyRound, Lock, ScanFace } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Lock, ScanFace } from "lucide-react";
 import { canUseBiometric, clearLock, enableLock, readLock, unlockWithBiometric } from "./lib/lock";
-import { deriveVault, type Vault } from "./lib/vault";
 
-// 잠금 화면: Face ID · 지문으로 열고, 안 되면 연결 비밀번호로 연다.
+// 잠금 화면: Face ID · 지문으로 연다. 생체 인식이 안 되면 폰이 알아서 폰 잠금 비밀번호(PIN)를 묻는다.
 
-export function LockScreen({ vault, onUnlock }: { vault: Vault; onUnlock: () => void }) {
-  const [mode, setMode] = useState<"bio" | "pass">(readLock() ? "bio" : "pass");
-  const [passphrase, setPassphrase] = useState("");
+export function LockScreen({ onUnlock }: { onUnlock: () => void }) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const tried = useRef(false);
 
-  const tryBiometric = async () => {
+  const tryBiometric = useCallback(async () => {
     setBusy(true);
     setMessage("");
     try {
       if (await unlockWithBiometric()) onUnlock();
     } catch {
-      setMessage("확인하지 못했어요. 다시 누르거나 비밀번호로 열어 주세요.");
+      setMessage("확인하지 못했어요. 다시 눌러 주세요.");
     } finally {
       setBusy(false);
     }
-  };
+  }, [onUnlock]);
 
-  // 앱을 열자마자 한 번 Face ID를 띄운다(아이폰은 누르는 동작이 있어야 뜰 수 있어 실패하면 버튼으로).
+  // 앱을 열자마자 한 번 띄운다(아이폰은 버튼을 눌러야 뜰 때가 있어 실패하면 버튼으로).
   useEffect(() => {
-    if (mode !== "bio" || tried.current) return;
+    if (tried.current) return;
     tried.current = true;
     unlockWithBiometric().then((ok) => ok && onUnlock()).catch(() => {});
-  }, [mode, onUnlock]);
-
-  const tryPassphrase = async () => {
-    setBusy(true);
-    setMessage("");
-    try {
-      const check = await deriveVault(passphrase, vault.householdId, vault.me);
-      if (check.auth === vault.auth) onUnlock();
-      else setMessage("비밀번호가 달라요.");
-    } finally {
-      setBusy(false);
-      setPassphrase("");
-    }
-  };
+  }, [onUnlock]);
 
   return (
     <div className="lock-screen">
       <span className="lock-badge"><Lock size={28} /></span>
       <h2>둘이자산</h2>
-      {mode === "bio" ? (
-        <>
-          <button className="primary" disabled={busy} onClick={() => void tryBiometric()}><ScanFace size={20} /> Face ID · 지문으로 열기</button>
-          <button className="text-button" onClick={() => setMode("pass")}><KeyRound size={14} /> 비밀번호로 열기</button>
-        </>
-      ) : (
-        <>
-          <input
-            className="plain-input"
-            type="password"
-            autoComplete="current-password"
-            placeholder="연결 비밀번호"
-            value={passphrase}
-            onChange={(event) => setPassphrase(event.target.value)}
-            onKeyDown={(event) => event.key === "Enter" && passphrase && void tryPassphrase()}
-          />
-          <button className="primary" disabled={busy || !passphrase} onClick={() => void tryPassphrase()}><KeyRound size={18} /> {busy ? "확인 중…" : "열기"}</button>
-          {readLock() && <button className="text-button" onClick={() => setMode("bio")}><ScanFace size={14} /> Face ID · 지문으로</button>}
-        </>
-      )}
+      <button className="primary" disabled={busy} onClick={() => void tryBiometric()}><ScanFace size={20} /> Face ID · 지문으로 열기</button>
+      <small className="muted small">안 되면 폰 잠금 비밀번호로 열려요</small>
       {message && <p className="badge bad">{message}</p>}
     </div>
   );
@@ -102,14 +68,14 @@ export function LockSettings({ name, onLockNow }: { name: string; onLockNow: () 
     <section className="card">
       <h3 className="card-title"><Lock size={18} /> 앱 잠금</h3>
       {available === false ? (
-        <p className="badge warn">이 기기에서는 Face ID · 지문을 쓸 수 없어요 · 비밀번호로 잠겨요</p>
+        <p className="badge warn">이 기기에서는 Face ID · 지문을 쓸 수 없어요</p>
       ) : (
         <div className="toggle-group wide">
           <button className={enabled ? "active" : ""} onClick={() => void (enabled ? undefined : turnOn())}><ScanFace size={15} /> 켜기</button>
           <button className={!enabled ? "active" : ""} onClick={() => { clearLock(); setEnabled(false); }}>끄기</button>
         </div>
       )}
-      <button className="add-button" onClick={onLockNow}><Lock size={16} /> 지금 잠그기</button>
+      {enabled && <button className="add-button" onClick={onLockNow}><Lock size={16} /> 지금 잠그기</button>}
       {message && <p className="badge bad">{message}</p>}
     </section>
   );
