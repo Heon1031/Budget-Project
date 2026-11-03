@@ -402,6 +402,22 @@ footer p { margin: 0; }
 .card.person-2 { border-top: 4px solid var(--partner); }
 .card .net-result { margin: 16px -22px 4px; padding: 14px 22px; }
 
+.ratio-row { padding: 12px 0; }
+.ratio-row + .ratio-row { border-top: 1px solid var(--line); }
+.ratio-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+.ratio-head small { color: var(--ink-3); font-size: var(--fs-caption); }
+.ratio-bar { display: flex; height: 12px; border-radius: 999px; overflow: hidden; background: var(--surface-2); }
+.ratio-bar span { display: block; height: 100%; }
+.needs { background: var(--ink-3); }
+.wants { background: var(--warn); }
+.savings { background: var(--brand); }
+.ratio-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 8px; color: var(--ink-2); font-size: var(--fs-caption); }
+.ratio-legend i { display: inline-block; width: 8px; height: 8px; margin-right: 4px; border-radius: 50%; }
+.ratio-note { margin: 6px 0 0; font-size: var(--fs-caption); font-weight: 600; line-height: 1.5; }
+.ratio-note.good { color: var(--good); }
+.ratio-note.warn { color: var(--warn); }
+.ratio-grid { margin-top: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
 /* 연결 */
 .connect-card h2 { margin: 0 0 8px; font-size: var(--fs-h2); font-weight: 800; }
 .code-box { margin-top: 14px; padding: 12px 14px; display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: center; border-radius: 14px; background: var(--surface-2); border: 1px solid var(--line); }

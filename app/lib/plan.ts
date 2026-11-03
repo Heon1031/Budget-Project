@@ -10,6 +10,10 @@ export type Person = {
   monthlyInvest: number;
   monthlyPension: number;
   monthlyEmergency: number;
+  // 각자 정한 목표 비율(실수령 기준, 합 100): 꼭 필요한 돈 · 하고 싶은 돈 · 모으는 돈
+  targetNeeds: number;
+  targetWants: number;
+  targetSavings: number;
   foodRate: number;
   cultureRate: number;
   travelRate: number;
@@ -32,8 +36,16 @@ export type Plan = {
 
 export type Owner = 0 | 1 | "both";
 
-export const FIXED_CATEGORIES = ["주거", "생활", "통신", "구독", "배움·운동", "보험", "교통", "대출", "기타"] as const;
+export const FIXED_CATEGORIES = ["주거", "생활", "통신", "보험", "교통", "대출", "학원·배움", "운동·건강", "취미", "구독", "기타"] as const;
 export type FixedCategory = (typeof FIXED_CATEGORIES)[number];
+
+// 50/30/20식으로 나눌 때 「꼭 필요한 돈」으로 보는 분류. 나머지는 「하고 싶은 돈」.
+export const NEED_CATEGORIES: readonly FixedCategory[] = ["주거", "생활", "통신", "보험", "교통", "대출"];
+
+export const RATIO_PRESETS = [
+  { id: "save-first", label: "먼저 모으기", needs: 40, wants: 10, savings: 50, note: "맞벌이 신혼부부에게 국내 재무 기사들이 권하는 「저축 50% 이상」" },
+  { id: "50-30-20", label: "50/30/20", needs: 50, wants: 30, savings: 20, note: "엘리자베스 워런 『All Your Worth』(2005), 세후 소득 기준" },
+] as const;
 
 // 매달 나가는 돈. owner가 "both"면 공동 부담(나누는 방식은 shareRule).
 export type FixedCost = { id: string; name: string; amount: number; owner: Owner; category: FixedCategory; day: number };
@@ -78,6 +90,9 @@ export const initialState: AppState = {
       cultureRate: 5,
       travelRate: 5,
       cashRate: 10,
+      targetNeeds: 40,
+      targetWants: 10,
+      targetSavings: 50,
     },
     {
       name: "배우자",
@@ -92,6 +107,9 @@ export const initialState: AppState = {
       cultureRate: 5,
       travelRate: 5,
       cashRate: 10,
+      targetNeeds: 40,
+      targetWants: 10,
+      targetSavings: 50,
     },
   ],
   plan: {
@@ -115,11 +133,11 @@ export const initialState: AppState = {
     { id: "f-internet", name: "인터넷", amount: 30_000, owner: "both", category: "통신", day: 10 },
     { id: "f-living", name: "공동 생활비(장보기·외식)", amount: 1_000_000, owner: "both", category: "생활", day: 1 },
     { id: "f-a-phone", name: "휴대폰", amount: 55_000, owner: 0, category: "통신", day: 15 },
-    { id: "f-a-gym", name: "헬스장", amount: 60_000, owner: 0, category: "배움·운동", day: 5 },
+    { id: "f-a-gym", name: "헬스장", amount: 60_000, owner: 0, category: "운동·건강", day: 5 },
     { id: "f-a-ott", name: "넷플릭스", amount: 13_500, owner: 0, category: "구독", day: 12 },
     { id: "f-b-phone", name: "휴대폰", amount: 45_000, owner: 1, category: "통신", day: 15 },
-    { id: "f-b-pilates", name: "필라테스", amount: 200_000, owner: 1, category: "배움·운동", day: 1 },
-    { id: "f-b-english", name: "영어 학원", amount: 180_000, owner: 1, category: "배움·운동", day: 3 },
+    { id: "f-b-pilates", name: "필라테스", amount: 200_000, owner: 1, category: "운동·건강", day: 1 },
+    { id: "f-b-english", name: "영어 학원", amount: 180_000, owner: 1, category: "학원·배움", day: 3 },
   ],
   wishes: [
     { id: "w-skin", name: "피부과 관리", amount: 300_000, kind: "once", owner: 1 },
@@ -166,7 +184,11 @@ const money = (value: unknown) => (typeof value === "number" && Number.isFinite(
 function cleanFixed(item: unknown): FixedCost[] {
   const raw = (item ?? {}) as Partial<FixedCost>;
   if (typeof raw.id !== "string" || typeof raw.name !== "string") return [];
-  const category = FIXED_CATEGORIES.includes(raw.category as FixedCategory) ? (raw.category as FixedCategory) : "기타";
+  const category = FIXED_CATEGORIES.includes(raw.category as FixedCategory)
+    ? (raw.category as FixedCategory)
+    : (raw.category as string) === "배움·운동" // 분류를 나누기 전에 저장한 항목
+      ? (/헬스|필라테스|요가|운동|PT|수영|클라이밍|골프/.test(String(raw.name)) ? "운동·건강" : "학원·배움")
+      : "기타";
   const day = typeof raw.day === "number" && raw.day >= 1 && raw.day <= 31 ? Math.round(raw.day) : 1;
   return [{ id: raw.id, name: raw.name.slice(0, 40), amount: money(raw.amount), owner: isOwner(raw.owner) ? raw.owner : "both", category, day }];
 }
@@ -206,6 +228,10 @@ export type PersonFlow = {
   saving: number;
   investing: number;
   free: number;
+  // 실수령을 셋으로 나눈 실제 금액(원). 공동 몫도 월급 비율대로 나눠 담는다.
+  needs: number;
+  wants: number;
+  savings: number;
 };
 
 export type Flow = {
@@ -223,7 +249,10 @@ export type Flow = {
 export function computeFlow(state: AppState, nets: [number, number]): Flow {
   const totalNet = nets[0] + nets[1];
   const shares: [number, number] = state.shareRule === "half" || totalNet <= 0 ? [0.5, 0.5] : [nets[0] / totalNet, nets[1] / totalNet];
-  const sumFor = (owner: Owner) => state.fixedCosts.filter((item) => item.owner === owner).reduce((sum, item) => sum + item.amount, 0);
+  const sumFor = (owner: Owner, needs?: boolean) =>
+    state.fixedCosts
+      .filter((item) => item.owner === owner && (needs === undefined || NEED_CATEGORIES.includes(item.category) === needs))
+      .reduce((sum, item) => sum + item.amount, 0);
   const jointFixed = sumFor("both");
   const houseMonthly = state.house.monthlySaving;
   const subscription = state.plan.housingSubscription;
@@ -233,7 +262,19 @@ export function computeFlow(state: AppState, nets: [number, number]): Flow {
     const investing = person.monthlyInvest + person.monthlyPension;
     const ownFixed = sumFor(index as 0 | 1);
     const jointShare = joint * shares[index];
-    return { net: nets[index], ownFixed, jointShare, saving, investing, free: nets[index] - ownFixed - jointShare - saving - investing };
+    const free = nets[index] - ownFixed - jointShare - saving - investing;
+    const share = shares[index];
+    return {
+      net: nets[index],
+      ownFixed,
+      jointShare,
+      saving,
+      investing,
+      free,
+      needs: sumFor(index as 0 | 1, true) + share * sumFor("both", true),
+      wants: sumFor(index as 0 | 1, false) + share * sumFor("both", false) + free,
+      savings: saving + investing + share * (houseMonthly + subscription),
+    };
   }) as [PersonFlow, PersonFlow];
   const monthlySaved = people[0].saving + people[0].investing + people[1].saving + people[1].investing + houseMonthly + subscription;
   return { people, shares, jointFixed, houseMonthly, subscription, monthlySaved, yearSaved: monthlySaved * 12, totalNet };

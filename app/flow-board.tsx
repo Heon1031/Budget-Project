@@ -5,14 +5,20 @@ import type { Flow } from "./lib/plan";
 
 // 첫 화면: 이대로 살면 1년에 얼마 모이는지, 이번 달 각자 마음 편히 쓸 돈, 내 집까지의 거리.
 
+type Targets = { targetNeeds: number; targetWants: number; targetSavings: number };
+
+const pct = (part: number, whole: number) => (whole > 0 ? (part / whole) * 100 : 0);
+
 export function FlowBoard({
   flow,
   names,
+  targets,
   house,
   onOpen,
 }: {
   flow: Flow;
   names: [string, string];
+  targets: [Targets, Targets];
   house: { daysLeft: number; have: number; need: number };
   onOpen: (tab: "fixed" | "wish" | "house" | "settings") => void;
 }) {
@@ -59,6 +65,46 @@ export function FlowBoard({
           공동 몫 = 공동 고정지출 {won(flow.jointFixed)} + 집 목돈 {won(flow.houseMonthly)}
           {flow.subscription > 0 ? ` + 청약 ${won(flow.subscription)}` : ""}을 {flow.shares[0] === 0.5 ? "반씩" : `월급 비율(${Math.round(flow.shares[0] * 100)}:${Math.round(flow.shares[1] * 100)})로`} 나눈 돈
         </p>
+      </section>
+
+      <section className="card">
+        <div className="card-head">
+          <h3 className="card-title">월급 나누기</h3>
+          <button className="text-button" onClick={() => onOpen("settings")}>목표 바꾸기</button>
+        </div>
+        {flow.people.map((person, index) => {
+          const needs = pct(person.needs, person.net);
+          const wants = pct(Math.max(0, person.wants), person.net);
+          const savings = pct(person.savings, person.net);
+          const target = targets[index];
+          const gap = target.targetSavings - savings;
+          return (
+            <div key={index} className="ratio-row">
+              <div className="ratio-head">
+                <b>{names[index]}</b>
+                <small>목표 {target.targetNeeds} · {target.targetWants} · {target.targetSavings}</small>
+              </div>
+              <div className="ratio-bar" aria-hidden="true">
+                <span className="needs" style={{ width: `${needs}%` }} />
+                <span className="wants" style={{ width: `${wants}%` }} />
+                <span className="savings" style={{ width: `${savings}%` }} />
+              </div>
+              <div className="ratio-legend">
+                <span><i className="needs" />꼭 필요 {Math.round(needs)}%</span>
+                <span><i className="wants" />하고 싶은 {Math.round(wants)}%</span>
+                <span><i className="savings" />모으기 {Math.round(savings)}%</span>
+              </div>
+              <p className={`ratio-note ${gap > 1 ? "warn" : "good"}`}>
+                {gap > 1
+                  ? `목표보다 ${Math.round(gap)}%p 덜 모아요 · 매달 ${won((gap / 100) * person.net)} 더 떼면 맞아요`
+                  : savings - target.targetSavings > 1
+                    ? `목표보다 ${Math.round(savings - target.targetSavings)}%p 더 모으고 있어요`
+                    : "목표만큼 모으고 있어요"}
+                {needs - target.targetNeeds > 1 ? ` · 꼭 필요한 돈이 목표보다 ${Math.round(needs - target.targetNeeds)}%p 많아요` : ""}
+              </p>
+            </div>
+          );
+        })}
       </section>
 
       <button className="summary-house" onClick={() => onOpen("house")}>

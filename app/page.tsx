@@ -125,6 +125,7 @@ export default function Home() {
           <FlowBoard
             flow={flow}
             names={names}
+            targets={[state.people[0], state.people[1]]}
             house={{ daysLeft: daysUntil(moveDate), have: houseCalc.willHave, need: houseCalc.needCash }}
             onOpen={setTab}
           />

@@ -101,7 +101,7 @@ export function WishBoard({
                   <p className="muted small">{verdict.detail}</p>
                   <div className="wish-actions">
                     {wish.kind === "monthly" ? (
-                      <button onClick={() => onMoveToFixed({ id: newId("f"), name: wish.name, amount: wish.amount, owner: wish.owner, category: "배움·운동", day: 1 }, wish.id)}>
+                      <button onClick={() => onMoveToFixed({ id: newId("f"), name: wish.name, amount: wish.amount, owner: wish.owner, category: "학원·배움", day: 1 }, wish.id)}>
                         시작했어요 · 고정지출로 옮기기
                       </button>
                     ) : (

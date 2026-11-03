@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { MoneyField, won } from "./fields";
-import type { AppState, Person, calculateSalary } from "./lib/plan";
+import { MoneyField, RateInput, won } from "./fields";
+import { RATIO_PRESETS, type AppState, type Person, type calculateSalary } from "./lib/plan";
 
 // 설정: 두 사람의 월급(실수령 추정) · 매달 저축 · 투자, 공동 몫 나누는 방식, 모은 자산.
 
@@ -61,6 +61,28 @@ export function SettingsBoard({
               <MoneyField label="주식·펀드" value={person.monthlyInvest} onChange={(monthlyInvest) => onPerson(i, { monthlyInvest })} />
               <MoneyField label="연금·IRP" value={person.monthlyPension} onChange={(monthlyPension) => onPerson(i, { monthlyPension })} />
             </div>
+            <h4 className="sub-title">내 월급 나누기 목표</h4>
+            <div className="chip-row">
+              {RATIO_PRESETS.map((preset) => {
+                const active = person.targetNeeds === preset.needs && person.targetWants === preset.wants && person.targetSavings === preset.savings;
+                return (
+                  <button key={preset.id} className={active ? "active" : ""} onClick={() => onPerson(i, { targetNeeds: preset.needs, targetWants: preset.wants, targetSavings: preset.savings })}>
+                    {preset.label} {preset.needs}·{preset.wants}·{preset.savings}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="rate-grid ratio-grid">
+              <label><span>꼭 필요한 돈</span><div><RateInput value={person.targetNeeds} onChange={(targetNeeds) => onPerson(i, { targetNeeds: Math.min(100, targetNeeds) })} /><b>%</b></div></label>
+              <label><span>하고 싶은 돈</span><div><RateInput value={person.targetWants} onChange={(targetWants) => onPerson(i, { targetWants: Math.min(100, targetWants) })} /><b>%</b></div></label>
+              <label><span>모으는 돈</span><div><RateInput value={person.targetSavings} onChange={(targetSavings) => onPerson(i, { targetSavings: Math.min(100, targetSavings) })} /><b>%</b></div></label>
+            </div>
+            {Math.round(person.targetNeeds + person.targetWants + person.targetSavings) !== 100 && (
+              <p className="verdict talk">세 칸을 더하면 {Math.round(person.targetNeeds + person.targetWants + person.targetSavings)}%예요. 100%가 되게 맞춰 주세요.</p>
+            )}
+            <p className="muted small">
+              꼭 필요한 돈: 주거 · 생활 · 통신 · 보험 · 교통 · 대출. 하고 싶은 돈: 학원 · 운동 · 취미 · 구독과 마음 편히 쓸 돈. 모으는 돈: 저축 · 투자 · 집 목돈 · 청약(공동 몫은 나누는 비율대로).
+            </p>
           </section>
         );
       })}
