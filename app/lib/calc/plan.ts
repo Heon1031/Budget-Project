@@ -63,7 +63,8 @@ export const BUCKET_ICONS = ["piggy", "cart", "heart", "wallet", "plane", "shiel
 export type BucketIcon = (typeof BUCKET_ICONS)[number];
 // example: 앱이 넣어 둔 예시 항목(옅은 회색). 이름 · 금액을 한 번이라도 고치면 빠진다.
 export type BucketItem = { id: string; name: string; amount: number; example?: boolean };
-export type Bucket = { id: string; name: string; icon: BucketIcon; kind: BucketKind; percent: number; items: BucketItem[] };
+// fixed: 비율 대신 「매달 딱 ○원」으로 정한 바구니(예: 용돈 20만). 있으면 percent보다 먼저 쓰고, 비율은 실수령으로 다시 계산한다.
+export type Bucket = { id: string; name: string; icon: BucketIcon; kind: BucketKind; percent: number; items: BucketItem[]; fixed?: number };
 
 // 기본 바구니 틀: 저축·투자 50(맞벌이 신혼 「저축 50% 이상」 조언) · 생활비 25 · 자기관리 15 · 용돈 7 · 여행 3 · 예비 0.
 export const BUCKET_TEMPLATE: Omit<Bucket, "items">[] = [
@@ -318,6 +319,7 @@ function cleanBucket(item: unknown): Bucket[] {
     kind: raw.kind === "save" || raw.kind === "free" ? raw.kind : "spend",
     percent,
     items,
+    ...(typeof raw.fixed === "number" && Number.isFinite(raw.fixed) && raw.fixed > 0 ? { fixed: Math.round(raw.fixed) } : {}),
   }];
 }
 
@@ -370,11 +372,13 @@ export function computeFlow(state: AppState, nets: [number, number]): Flow {
   const people = state.people.map((person, index) => {
     const net = nets[index];
     const buckets = person.buckets.map((bucket) => {
-      const budget = Math.round((net * bucket.percent) / 100);
+      const budget = bucket.fixed && bucket.fixed > 0 ? bucket.fixed : Math.round((net * bucket.percent) / 100);
+      // 금액 고정 바구니는 비율을 실수령으로 다시 계산해 보여 준다(소수 첫째 자리).
+      const percent = bucket.fixed && bucket.fixed > 0 ? (net > 0 ? Math.round((bucket.fixed / net) * 1000) / 10 : 0) : bucket.percent;
       const planned = bucket.items.reduce((sum, item) => sum + item.amount, 0);
-      return { ...bucket, budget, planned, left: budget - planned };
+      return { ...bucket, percent, budget, planned, left: budget - planned };
     });
-    const allocatedPercent = person.buckets.reduce((sum, bucket) => sum + bucket.percent, 0);
+    const allocatedPercent = buckets.reduce((sum, bucket) => sum + bucket.percent, 0);
     const unallocated = net - buckets.reduce((sum, bucket) => sum + bucket.budget, 0);
     const freeLeft = buckets.filter((bucket) => bucket.kind === "free").reduce((sum, bucket) => sum + bucket.left, 0);
     // 모으는 돈은 실제로 정해 둔 항목을 쓰고, 항목이 없으면 바구니 금액을 쓴다.

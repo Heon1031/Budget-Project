@@ -869,3 +869,28 @@ li.is-example .icon-ghost { opacity: .6; }
 .share-bar span:first-child { border-radius: 999px 0 0 999px; }
 .share-bar span:last-of-type { border-radius: 0 999px 999px 0; }
 .share-bar i { position: absolute; top: -4px; bottom: -4px; width: 0; border-left: 2px dashed var(--ink); }
+
+/* 바구니 카드: 매달 금액을 크게(눌러서 금액 고정) + 오른쪽 % 칸 */
+.bucket-head { grid-template-columns: 36px minmax(0, 1fr) 44px; }
+.bucket-money { display: grid; grid-template-columns: minmax(0, 1fr) 92px; gap: 8px; align-items: center; margin-top: 12px; }
+.bucket-amount { display: flex; align-items: baseline; gap: 6px; min-height: 48px; padding: 0 12px; border-radius: var(--btn-r-s); background: var(--surface-2); }
+.bucket-amount > span { flex: 0 0 auto; color: var(--ink-3); font-size: var(--fs-small); font-weight: 600; align-self: center; }
+.bucket-amount .amount-input { align-self: stretch; }
+.bucket-amount .amount-input input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; text-align: right; font-size: 20px; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; color: var(--ink); }
+.bucket-amount .unit-suffix { align-self: center; }
+.bucket-amount:focus-within { box-shadow: var(--focus); }
+.bucket-money.fixed .bucket-amount { background: color-mix(in srgb, var(--bucket-color) 12%, var(--surface)); }
+.bucket-money.fixed .bucket-percent { border-style: dashed; color: var(--ink-3); }
+.bucket-money .bucket-percent { min-height: 48px; }
+
+/* 나누기 큰 카드: 1년 모일 돈 | 마음 편히 쓸 돈 */
+.split-hero { grid-template-columns: 1fr 1fr; column-gap: 0; row-gap: 12px; }
+.split-hero > div { display: grid; gap: 2px; min-width: 0; }
+.split-hero > div + div { padding-left: 16px; border-left: 1px solid var(--hero-line); }
+.split-hero strong { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.2; }
+.split-hero small { color: var(--hero-muted); font-size: var(--fs-caption); font-weight: 600; }
+.split-hero .hero-label { font-size: var(--fs-small); }
+.split-hero-foot { grid-column: 1 / -1; margin: 0; padding-top: 10px; border-top: 1px solid var(--hero-line); color: var(--hero-muted); font-size: var(--fs-small); font-weight: 600; }
+.bucket-amount { align-items: center; min-width: 0; overflow: hidden; }
+.bucket-amount .amount-input { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; }
+.bucket-amount .amount-input input { flex: 1 1 auto; width: 0; min-width: 0; min-height: 44px; padding: 0; }

@@ -37,9 +37,10 @@ const withCommas = (text: string) => {
   return fraction !== undefined ? `${formatted || "0"}.${fraction}` : formatted;
 };
 
-const toText = (value: number, size: number) => {
+const toText = (value: number, size: number, decimals = 4) => {
   if (!value) return "";
-  const shown = Math.round((value / size) * 10_000) / 10_000;
+  const scale = 10 ** decimals;
+  const shown = Math.round((value / size) * scale) / scale;
   return withCommas(String(shown));
 };
 
@@ -56,13 +57,16 @@ export function readWon(value: number) {
 
 // 금액 입력: 쉼표를 넣어도 커서가 튀지 않고, 누르면 전체가 선택돼 바로 고쳐 쓸 수 있다.
 // 예시값이면 작고 옅은 안내 글자(placeholder)로만 보이고, 칸을 누르면 사라져 바로 우리 숫자를 친다.
-export function AmountInput({ value, onChange, label, example = false }: { value: number; onChange: (value: number) => void; label?: string; example?: boolean }) {
+// decimals: 칸에 보이는 소수 자리(만원 · 억원 단위일 때). 계산한 금액(바구니 금액)은 1자리면 충분하다.
+export function AmountInput({ value, onChange, label, example = false, decimals = 4 }: { value: number; onChange: (value: number) => void; label?: string; example?: boolean; decimals?: number }) {
   const unit = useContext(UnitContext);
-  const [draft, setDraft] = useState<string | null>(null);
+  // 치는 중인 글자. 만든 금액(value)과 함께 둬서, 밖에서 금액이 바뀌면(밀대 등) 바로 새 금액을 보여 준다.
+  const [draft, setDraft] = useState<{ text: string; value: number } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const caret = useRef<number | null>(null);
   const size = UNITS[unit].size;
-  const shown = toText(value, size);
+  const shown = toText(value, size, decimals);
+  const typing = draft !== null && draft.value === value ? draft.text : null;
 
   // 쉼표가 새로 생겨도 「입력한 숫자 몇 개 뒤」 자리에 커서를 다시 둔다.
   useLayoutEffect(() => {
@@ -88,9 +92,9 @@ export function AmountInput({ value, onChange, label, example = false }: { value
         inputMode={unit === 0 ? "numeric" : "decimal"}
         aria-label={example ? `${label ?? "금액"} (예시 ${shown || 0})` : label}
         placeholder={example ? shown || "0" : "0"}
-        value={draft !== null ? withCommas(draft) : example ? "" : shown}
+        value={typing !== null ? withCommas(typing) : example ? "" : shown}
         onFocus={(event) => {
-          setDraft(example ? "" : shown.replace(/,/g, ""));
+          setDraft({ text: example ? "" : shown.replace(/,/g, ""), value });
           event.target.select();
         }}
         onBlur={() => setDraft(null)}
@@ -102,8 +106,9 @@ export function AmountInput({ value, onChange, label, example = false }: { value
           if (unit === 0) text = text.replace(/\./g, "");
           const dot = text.indexOf(".");
           if (dot >= 0) text = text.slice(0, dot + 1) + text.slice(dot + 1).replace(/\./g, "").slice(0, 4);
-          setDraft(text);
-          onChange(Math.round((Number(text) || 0) * size));
+          const next = Math.round((Number(text) || 0) * size);
+          setDraft({ text, value: next });
+          onChange(next);
         }}
       />
       <b className="unit-suffix">{UNITS[unit].label}</b>

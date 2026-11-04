@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2, TriangleAlert, Check, ChevronDown, Settings2, Sparkles, User, Users } from "lucide-react";
+import { Plus, Trash2, TriangleAlert, Check, ChevronDown, PiggyBank, Settings2, Sparkles, User, Users, Wallet } from "lucide-react";
 import { adviseBuckets } from "../lib/calc/advice";
 import { changeCount, diffPlan, snapshotPlan } from "../lib/calc/changes";
 import { ChangesCard } from "./changes-card";
@@ -127,9 +127,19 @@ export function BucketBoard({
         )}
       </div>
 
-      <section className="summary-main">
-        <span className="hero-label">{names[who]} 월 실수령</span>
-        <strong>{won(pf.net)}</strong>
+      {/* 비율을 바꾸면 바로 따라 움직이는 두 숫자. 월 실수령은 작게 아래에. */}
+      <section className="summary-main split-hero">
+        <div>
+          <span className="hero-label"><PiggyBank size={15} /> 1년 뒤 모이는 돈</span>
+          <strong>{shortWon(pf.saveMonthly * 12)}</strong>
+          <small>매달 {shortWon(pf.saveMonthly)}</small>
+        </div>
+        <div>
+          <span className="hero-label"><Wallet size={15} /> 마음 편히 쓸 돈</span>
+          <strong>{shortWon(pf.free)}</strong>
+          <small>이번 달</small>
+        </div>
+        <p className="split-hero-foot">{names[who]} 월 실수령 {won(pf.net)}</p>
       </section>
 
       <ChangesCard confirmed={confirmed} groups={groups} onConfirm={confirmNow} onRevert={revert} />
@@ -142,12 +152,19 @@ export function BucketBoard({
               <span className="bucket-icon"><Icon size={18} /></span>
               <span className="bucket-title">
                 <b>{bucket.name}</b>
-                <small>{KIND_LABEL[bucket.kind]} · {won(bucket.budget)}</small>
+                <small>{KIND_LABEL[bucket.kind]}{bucket.fixed ? " · 금액 고정" : ""}</small>
               </span>
-              <label className="bucket-percent"><RateInput value={bucket.percent} onChange={(percent) => updateBucket(bucket.id, { percent: Math.min(100, percent) })} /><b>%</b></label>
               <button className="icon-close" aria-label={`${bucket.name} 바구니 고치기`} onClick={() => setEditing(person.buckets[index])}><Settings2 size={18} /></button>
             </div>
-            <SnapSlider label={`${bucket.name} 비율`} value={bucket.percent} onChange={(percent) => updateBucket(bucket.id, { percent })} />
+            {/* 매달 금액을 크게: 눌러서 「딱 ○원」으로 정하면 금액 고정(비율은 자동). % 칸 · 밀대를 만지면 다시 비율로. */}
+            <div className={`bucket-money ${bucket.fixed ? "fixed" : ""}`}>
+              <label className="bucket-amount">
+                <span>매달</span>
+                <AmountInput label={`${bucket.name} 매달 금액`} decimals={1} value={bucket.budget} onChange={(fixed) => updateBucket(bucket.id, { fixed: fixed > 0 ? fixed : undefined, percent: pf.net > 0 ? Math.round((fixed / pf.net) * 1000) / 10 : 0 })} />
+              </label>
+              <label className="bucket-percent"><RateInput value={bucket.percent} onChange={(percent) => updateBucket(bucket.id, { percent: Math.min(100, percent), fixed: undefined })} /><b>%</b></label>
+            </div>
+            <SnapSlider label={`${bucket.name} 비율`} value={bucket.percent} onChange={(percent) => updateBucket(bucket.id, { percent, fixed: undefined })} />
             <button className="items-toggle" aria-expanded={openIds.includes(bucket.id)} onClick={() => toggleOpen(bucket.id)}>
               <span>항목 {bucket.items.length}개 · {shortWon(bucket.planned)} 담음</span>
               <ChevronDown size={18} />

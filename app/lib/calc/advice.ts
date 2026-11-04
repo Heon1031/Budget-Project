@@ -37,11 +37,15 @@ const eun = (word: string) => `${word}${hasBatchim(word) ? "은" : "는"}`;
 const FLEX_RANK: Record<string, number> = { "b-spare": 1, "b-trip": 1, "b-free": 2, "b-self": 3, "b-save": 4, "b-living": 5 };
 const rankOf = (bucket: BucketFlow) => FLEX_RANK[bucket.id] ?? (bucket.kind === "free" ? 2 : bucket.kind === "save" ? 4 : 1.5);
 
-const setPercent = (buckets: Bucket[], changes: Record<string, number>) =>
-  buckets.map((bucket) => (bucket.id in changes ? { ...bucket, percent: Math.max(0, Math.round((bucket.percent + changes[bucket.id]) * 10) / 10) } : bucket));
-
 export function adviseBuckets(buckets: Bucket[], pf: PersonFlow, justChanged?: string): Advice {
   const net = pf.net;
+  // 바로 맞추기: 지금 보이는 비율(금액 고정 바구니는 다시 계산한 비율)에서 더하고 빼며, 고친 바구니는 금액 고정을 푼다.
+  const setPercent = (list: Bucket[], changes: Record<string, number>) =>
+    list.map((bucket) => {
+      if (!(bucket.id in changes)) return bucket;
+      const shown = pf.buckets.find((b) => b.id === bucket.id)?.percent ?? bucket.percent;
+      return { ...bucket, percent: Math.max(0, Math.round((shown + changes[bucket.id]) * 10) / 10), fixed: undefined };
+    });
   if (net <= 0) return { tone: "tip", text: "설정에서 연봉을 넣으면 바구니마다 얼마인지 알려 드릴게요.", actions: [] };
   const pct = (amount: number) => (amount / net) * 100;
   const flows = pf.buckets;
