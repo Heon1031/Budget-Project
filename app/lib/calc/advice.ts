@@ -52,11 +52,12 @@ export function adviseBuckets(buckets: Bucket[], pf: PersonFlow): Advice {
       .sort((a, b) => b.spare - a.spare);
     const pick = spareFirst[0];
     if (pick && pick.spare >= 0.5) {
-      const cut = Math.min(over, Math.floor(pick.spare * 10) / 10, pick.bucket.percent);
+      // 사람이 맞추기 쉬운 정수 % 로 제안한다.
+      const cut = Math.max(1, Math.min(Math.ceil(over), Math.floor(pick.spare), Math.floor(pick.bucket.percent)));
       const rest = Math.round((over - cut) * 10) / 10;
       return {
         tone: "warn",
-        text: `${over}% 넘게 나눴어요. ${pick.bucket.name}에서 ${cut}% 줄이면 ${rest > 0 ? `${rest}%만 더 줄이면 돼요` : "딱 맞아요"}.`,
+        text: rest > 0 ? `${over}% 넘게 나눴어요. ${pick.bucket.name}에서 ${cut}%를 줄이고, 나머지 ${rest}%는 다른 바구니에서 줄여 주세요.` : `${over}% 넘게 나눴어요. ${pick.bucket.name}에서 ${cut}% 줄이면 딱 맞아요.`,
         action: { label: `${pick.bucket.name} -${cut}%`, buckets: setPercent(buckets, { [pick.bucket.id]: -cut }) },
       };
     }
