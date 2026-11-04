@@ -8,11 +8,11 @@ import { ChangesCard } from "./changes-card";
 import { CommonBoard } from "./common-board";
 import { BUCKET_ICON_MAP, bucketColor } from "./charts";
 import { AmountInput, RateInput, SnapSlider, shortWon, won } from "./fields";
-import { BUCKET_ICONS, BUCKET_TEMPLATE, initialState, newId, type Bucket, type BucketIcon, type BucketItem, type BucketKind, type CommonAccount, type Flow, type Person } from "../lib/calc/plan";
+import { BUCKET_ICONS, BUCKET_TEMPLATE, newId, type Bucket, type BucketIcon, type BucketKind, type CommonAccount, type Flow, type Person } from "../lib/calc/plan";
 
 // 처음 들어 있던 예시 항목을 그대로 두었는지(이름 · 금액이 예시와 같음).
-const isExampleItem = (who: 0 | 1, bucketId: string, item: BucketItem) =>
-  initialState.people[who].buckets.some((bucket) => bucket.id === bucketId && bucket.items.some((it) => it.id === item.id && it.name === item.name && it.amount === item.amount));
+// 바구니 안 항목 하나를 고치면 그 바구니는 「우리 숫자」로 본다 → 나머지 항목의 예시 표시도 뺀다.
+const real = ({ id, name, amount }: { id: string; name: string; amount: number }) => ({ id, name, amount });
 
 // 막대 위 · 아래 글자 자리: 양 끝에서는 안쪽으로 붙여 잘리지 않게.
 const tagAt = (at: number) =>
@@ -181,7 +181,7 @@ export function BucketBoard({
             })()}
             <ul className="item-list">
               {bucket.items.map((item) => {
-                const example = isExampleItem(who, bucket.id, item);
+                const example = item.example === true;
                 return (
                 <li key={item.id} className={example ? "is-example" : ""}>
                   <input
@@ -190,14 +190,14 @@ export function BucketBoard({
                     placeholder={example ? item.name : "항목 이름"}
                     maxLength={40}
                     aria-label="항목 이름"
-                    onChange={(event) => updateBucket(bucket.id, { items: bucket.items.map((it) => (it.id === item.id ? { ...it, name: event.target.value } : it)) })}
+                    onChange={(event) => updateBucket(bucket.id, { items: bucket.items.map((it) => (it.id === item.id ? { id: it.id, name: event.target.value, amount: it.amount } : real(it))) })}
                   />
                   <span className="item-amount">
                     <AmountInput
                       label={`${item.name} 금액`}
                       value={item.amount}
                       example={example}
-                      onChange={(amount) => updateBucket(bucket.id, { items: bucket.items.map((it) => (it.id === item.id ? { ...it, amount } : it)) })}
+                      onChange={(amount) => updateBucket(bucket.id, { items: bucket.items.map((it) => (it.id === item.id ? { id: it.id, name: it.name, amount } : real(it))) })}
                     />
                   </span>
                   <button className="icon-ghost" aria-label={`${item.name} 지우기`} onClick={() => updateBucket(bucket.id, { items: bucket.items.filter((it) => it.id !== item.id) })}><Trash2 size={16} /></button>

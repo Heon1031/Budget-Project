@@ -61,7 +61,8 @@ export type Wish = { id: string; name: string; amount: number; kind: "once" | "m
 export type BucketKind = "save" | "spend" | "free";
 export const BUCKET_ICONS = ["piggy", "cart", "heart", "wallet", "plane", "shield", "users", "home", "sparkles"] as const;
 export type BucketIcon = (typeof BUCKET_ICONS)[number];
-export type BucketItem = { id: string; name: string; amount: number };
+// example: 앱이 넣어 둔 예시 항목(옅은 회색). 이름 · 금액을 한 번이라도 고치면 빠진다.
+export type BucketItem = { id: string; name: string; amount: number; example?: boolean };
 export type Bucket = { id: string; name: string; icon: BucketIcon; kind: BucketKind; percent: number; items: BucketItem[] };
 
 // 기본 바구니 틀: 저축·투자 50(맞벌이 신혼 「저축 50% 이상」 조언) · 생활비 25 · 자기관리 15 · 용돈 7 · 여행 3 · 예비 0.
@@ -77,7 +78,7 @@ export const BUCKET_TEMPLATE: Omit<Bucket, "items">[] = [
 const exampleBuckets = (items: Record<string, [string, number][]>): Bucket[] =>
   BUCKET_TEMPLATE.map((bucket) => ({
     ...bucket,
-    items: (items[bucket.id] ?? []).map(([name, amount], index) => ({ id: `${bucket.id}-${index}`, name, amount })),
+    items: (items[bucket.id] ?? []).map(([name, amount], index) => ({ id: `${bucket.id}-${index}`, name, amount, example: true })),
   }));
 
 export type AppState = {
@@ -220,7 +221,8 @@ export function restoreState(saved: unknown): AppState {
       const raw = (people[index] as Partial<Person> | undefined)?.buckets;
       const fixedCosts = Array.isArray(data.fixedCosts) ? data.fixedCosts.flatMap(cleanFixed) : [];
       const confirmed = cleanConfirmed((people[index] as Partial<Person> | undefined)?.confirmed);
-      return { ...person, buckets: Array.isArray(raw) ? raw.flatMap(cleanBucket) : migrateBuckets(person, index as 0 | 1, fixedCosts), ...(confirmed ? { confirmed } : {}) };
+      const buckets = Array.isArray(raw) ? inferExamples(raw.flatMap(cleanBucket), index as 0 | 1) : migrateBuckets(person, index as 0 | 1, fixedCosts);
+      return { ...person, buckets, ...(confirmed ? { confirmed } : {}) };
     }) as [Person, Person],
     plan: mergeDefaults(initialState.plan, data.plan),
     house: mergeDefaults(initialHouse, data.house),
@@ -276,6 +278,18 @@ function migrateFixed(planSource: unknown): FixedCost[] {
     .map(([name, key, category]) => ({ id: `f-${key}`, name, amount: plan[key], owner: "both" as const, category, day: 25 }));
 }
 
+// 예시 표시가 생기기 전 저장값: 바구니 안 항목이 모두 예시와 똑같을 때만 예시로 본다(하나라도 고쳤으면 우리 숫자).
+function inferExamples(buckets: Bucket[], index: 0 | 1): Bucket[] {
+  const sample = initialState.people[index].buckets;
+  const isSample = (bucketId: string, item: BucketItem) =>
+    sample.some((b) => b.id === bucketId && b.items.some((it) => it.id === item.id && it.name === item.name && it.amount === item.amount));
+  return buckets.map((bucket) => {
+    if (bucket.items.some((item) => "example" in item)) return bucket;
+    const allSample = bucket.items.length > 0 && bucket.items.every((item) => isSample(bucket.id, item));
+    return allSample ? { ...bucket, items: bucket.items.map((item) => ({ ...item, example: true })) } : bucket;
+  });
+}
+
 function cleanCommon(raw: unknown): CommonAccount {
   const data = (raw ?? {}) as Partial<CommonAccount>;
   const items = Array.isArray(data.items)
@@ -294,7 +308,7 @@ function cleanBucket(item: unknown): Bucket[] {
   const items = Array.isArray(raw.items)
     ? raw.items.flatMap((entry) => {
         const it = (entry ?? {}) as Partial<BucketItem>;
-        return typeof it.id === "string" && typeof it.name === "string" ? [{ id: it.id, name: it.name.slice(0, 40), amount: money(it.amount) }] : [];
+        return typeof it.id === "string" && typeof it.name === "string" ? [{ id: it.id, name: it.name.slice(0, 40), amount: money(it.amount), ...(it.example === true ? { example: true } : {}) }] : [];
       })
     : [];
   return [{
