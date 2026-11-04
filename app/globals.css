@@ -837,3 +837,35 @@ li.is-example .icon-ghost { opacity: .6; }
 .import-button:focus-within { box-shadow: var(--focus); }
 /* 두 사람 도넛 카드: 설명 줄 수가 달라도 도넛이 같은 높이에 오게 위에 붙인다 */
 .person-donut { align-content: start; }
+
+/* 나누기 「공동」(모임통장) */
+.toggle-group.wide.three { grid-template-columns: 1fr 1fr 1fr; }
+.common-bars { display: grid; gap: 6px; margin-top: 14px; }
+.common-bar { display: flex; gap: 2px; height: 12px; min-width: 6px; border-radius: 999px; overflow: hidden; }
+.common-bar.in .who-1 { background: #ffffff; }
+.common-bar.in .who-2 { background: rgba(255, 255, 255, .6); }
+.common-bar.out { background: repeating-linear-gradient(135deg, rgba(255, 255, 255, .85) 0 3px, rgba(255, 255, 255, .35) 3px 6px); }
+.common-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 10px; font-size: var(--fs-caption); font-weight: 600; }
+.common-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.common-legend i { width: 10px; height: 10px; border-radius: 3px; }
+.common-legend i.who-1 { background: #ffffff; }
+.common-legend i.who-2 { background: rgba(255, 255, 255, .6); }
+.common-legend i.out { background: repeating-linear-gradient(135deg, rgba(255, 255, 255, .85) 0 2px, rgba(255, 255, 255, .35) 2px 4px); }
+.common-head { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 8px; align-items: center; }
+.quick-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.quick-chips button { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; padding: 0 14px; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--surface); color: var(--ink-2); font-size: var(--fs-small); font-weight: 600; }
+.common-rows { list-style: none; margin: 10px 0 0; padding: 0; display: grid; }
+.common-rows li { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 10px 0; border-top: 1px solid var(--line); font-size: var(--fs-small); }
+.common-rows li:first-child { border-top: 0; }
+.common-rows span { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; font-weight: 600; }
+.common-rows small { color: var(--ink-3); font-size: var(--fs-caption); font-weight: 500; }
+.common-rows b { text-align: right; font-variant-numeric: tabular-nums; }
+.common-rows b small { display: block; }
+.common-rows i, .share-bar span { border-radius: 3px; }
+.common-rows i { width: 10px; height: 10px; }
+.common-rows i.who-1, .share-bar .who-1 { background: var(--brand); }
+.common-rows i.who-2, .share-bar .who-2 { background: var(--partner); }
+.share-bar { position: relative; display: flex; gap: 2px; height: 14px; margin-top: 14px; }
+.share-bar span:first-child { border-radius: 999px 0 0 999px; }
+.share-bar span:last-of-type { border-radius: 0 999px 999px 0; }
+.share-bar i { position: absolute; top: -4px; bottom: -4px; width: 0; border-left: 2px dashed var(--ink); }

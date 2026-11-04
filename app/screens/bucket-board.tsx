@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2, TriangleAlert, Check, ChevronDown, Settings2, Sparkles, User } from "lucide-react";
+import { Plus, Trash2, TriangleAlert, Check, ChevronDown, Settings2, Sparkles, User, Users } from "lucide-react";
 import { adviseBuckets } from "../lib/calc/advice";
 import { changeCount, diffPlan, snapshotPlan } from "../lib/calc/changes";
 import { ChangesCard } from "./changes-card";
+import { CommonBoard } from "./common-board";
 import { BUCKET_ICON_MAP, bucketColor } from "./charts";
 import { AmountInput, RateInput, SnapSlider, shortWon, won } from "./fields";
-import { BUCKET_ICONS, BUCKET_TEMPLATE, initialState, newId, type Bucket, type BucketIcon, type BucketItem, type BucketKind, type Flow, type Person } from "../lib/calc/plan";
+import { BUCKET_ICONS, BUCKET_TEMPLATE, initialState, newId, type Bucket, type BucketIcon, type BucketItem, type BucketKind, type CommonAccount, type Flow, type Person } from "../lib/calc/plan";
 
 // 처음 들어 있던 예시 항목을 그대로 두었는지(이름 · 금액이 예시와 같음).
 const isExampleItem = (who: 0 | 1, bucketId: string, item: BucketItem) =>
@@ -27,14 +28,20 @@ export function BucketBoard({
   names,
   me,
   onPerson,
+  common,
+  onCommon,
 }: {
   people: [Person, Person];
   flow: Flow;
   names: [string, string];
   me: 0 | 1;
   onPerson: (index: 0 | 1, patch: Partial<Person>) => void;
+  common: CommonAccount;
+  onCommon: (common: CommonAccount) => void;
 }) {
   const [who, setWho] = useState<0 | 1>(me);
+  // 남편 · 아내 · 공동(모임통장) 중 무엇을 보는지
+  const [showCommon, setShowCommon] = useState(false);
   const [editing, setEditing] = useState<Bucket | null>(null);
   // 항목 목록은 접어 두고, 누른 바구니만 연다. 비율만 만질 때는 카드가 짧아 스크롤이 적다.
   const [openIds, setOpenIds] = useState<string[]>([]);
@@ -74,11 +81,15 @@ export function BucketBoard({
 
   return (
     <div className="content">
-      <div className="toggle-group wide">
+      <div className="toggle-group wide three">
         {([0, 1] as const).map((index) => (
-          <button key={index} className={who === index ? "active" : ""} onClick={() => setWho(index)}><User size={15} /> {names[index]}</button>
+          <button key={index} className={!showCommon && who === index ? "active" : ""} onClick={() => { setWho(index); setShowCommon(false); }}><User size={15} /> {names[index]}</button>
         ))}
+        <button className={showCommon ? "active" : ""} onClick={() => setShowCommon(true)}><Users size={15} /> 공동</button>
       </div>
+
+      {showCommon && <CommonBoard common={common} people={people} flows={flow.people} names={names} onChange={onCommon} />}
+      {!showCommon && <>
 
       {/* 스크롤해도 위에 붙어 있는 전체 비율: 100%를 넘으면 넘은 만큼 빨갛게 */}
       <div className={`alloc-sticky ${over ? "over" : pf.allocatedPercent < 99.95 ? "under" : "done"}`} role="status" aria-live="polite">
@@ -211,6 +222,7 @@ export function BucketBoard({
           }
         }}>기본 비율로</button>
       </div>
+      </>}
 
       {editing && (
         <BucketEditor

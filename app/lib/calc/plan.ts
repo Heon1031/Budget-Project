@@ -88,7 +88,16 @@ export type AppState = {
   fixedCosts: FixedCost[];
   wishes: Wish[];
   shareRule: "income" | "half";
+  // 공동 통장(예: 토스 모임통장): 들어오는 돈은 각자 바구니의 「공동 통장」 항목에서 가져오고, 나가는 것만 여기에 적는다.
+  common: CommonAccount;
 };
+
+export type CommonAccount = { name: string; items: BucketItem[] };
+
+// 각자 바구니에서 「공동 통장으로 보내는 돈」으로 볼 항목 이름.
+export const COMMON_TRANSFER = /공동\s*통장|모임\s*통장|모임/;
+// 집 · 공동 몫으로 볼 항목(공동 통장 + 집세 · 대출 이자 · 관리비).
+export const HOUSEHOLD_SHARE = /공동\s*통장|모임|전세|월세|관리비|주택\s*대출|대출\s*이자/;
 
 export const STORAGE_KEY = "duri-asset-plan-v4";
 export const RULES = {
@@ -184,6 +193,7 @@ export const initialState: AppState = {
     { id: "w-golf", name: "골프 레슨", amount: 200_000, kind: "monthly", owner: 0 },
   ],
   shareRule: "income",
+  common: { name: "모임통장", items: [] },
 };
 
 // 저장된 값에서 기본값과 같은 종류인 항목만 가져온다. 새 항목이 생겨도 예전 저장값이 깨지지 않는다.
@@ -217,6 +227,7 @@ export function restoreState(saved: unknown): AppState {
     fixedCosts: Array.isArray(data.fixedCosts) ? data.fixedCosts.flatMap(cleanFixed) : migrateFixed(data.plan),
     wishes: Array.isArray(data.wishes) ? data.wishes.flatMap(cleanWish) : initialState.wishes,
     shareRule: data.shareRule === "half" ? "half" : "income",
+    common: cleanCommon(data.common),
   };
 }
 
@@ -261,6 +272,17 @@ function migrateFixed(planSource: unknown): FixedCost[] {
   return items
     .filter(([, key]) => plan[key] > 0)
     .map(([name, key, category]) => ({ id: `f-${key}`, name, amount: plan[key], owner: "both" as const, category, day: 25 }));
+}
+
+function cleanCommon(raw: unknown): CommonAccount {
+  const data = (raw ?? {}) as Partial<CommonAccount>;
+  const items = Array.isArray(data.items)
+    ? data.items.flatMap((entry) => {
+        const it = (entry ?? {}) as Partial<BucketItem>;
+        return typeof it.id === "string" && typeof it.name === "string" ? [{ id: it.id, name: it.name.slice(0, 40), amount: money(it.amount) }] : [];
+      })
+    : [];
+  return { name: typeof data.name === "string" && data.name.trim() ? data.name.slice(0, 20) : "모임통장", items };
 }
 
 function cleanBucket(item: unknown): Bucket[] {

@@ -230,7 +230,7 @@ export default function Home() {
             onOpen={setTab}
           />
         )}
-        {tab === "buckets" && <BucketBoard people={state.people} flow={flow} names={names} me={vault?.me ?? 0} onPerson={updatePerson} />}
+        {tab === "buckets" && <BucketBoard people={state.people} flow={flow} names={names} me={vault?.me ?? 0} onPerson={updatePerson} common={state.common} onCommon={(common) => update({ common })} />}
         {tab === "wish" && (
           <WishBoard
             wishes={state.wishes}
