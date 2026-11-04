@@ -894,3 +894,19 @@ li.is-example .icon-ghost { opacity: .6; }
 .bucket-amount { align-items: center; min-width: 0; overflow: hidden; }
 .bucket-amount .amount-input { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; }
 .bucket-amount .amount-input input { flex: 1 1 auto; width: 0; min-width: 0; min-height: 44px; padding: 0; }
+
+/* 설정 연결 카드: 제목 줄 + 한 줄씩(간격 12) */
+.connect-card { display: grid; gap: 12px; }
+.connect-card > * { margin: 0; }
+.connect-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.connect-head .card-title { margin: 0; }
+.me-badge { flex: 0 0 auto; padding: 6px 10px; border-radius: 999px; background: var(--brand-weak); color: var(--brand); font-size: var(--fs-caption); font-weight: 700; }
+.add-button.wide { width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 6px; margin-top: 0; }
+.connect-card .sync-line { margin-top: 0; }
+.connect-card .explain { padding: 0; }
+.connect-card .explain summary { min-height: 44px; display: flex; align-items: center; gap: 6px; cursor: pointer; color: var(--ink-2); font-size: var(--fs-small); font-weight: 600; }
+.connect-card .explain p { margin: 0 0 10px; color: var(--ink-2); font-size: var(--fs-small); line-height: 1.55; }
+.connect-card button.danger { margin-top: 0; }
+.reset-card { display: grid; gap: 4px; }
+.reset-card p { margin: 0; }
+.reset-button { justify-self: start; margin-top: 0; color: var(--bad); }

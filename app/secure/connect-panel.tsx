@@ -169,7 +169,11 @@ function ConnectedCard({
 
   return (
     <section className="card connect-card">
-      <h3 className="card-title"><Link2 size={18} /> 두 폰 연결 · 이 폰은 {names[vault.me]}</h3>
+      <div className="connect-head">
+        <h3 className="card-title"><Link2 size={18} /> 두 폰 연결</h3>
+        <span className="me-badge">이 폰 · {names[vault.me]}</span>
+      </div>
+      <p className="muted small">한 기록을 둘이 함께 써요. 어느 폰에서든 남편 · 아내 · 공동을 모두 고칠 수 있어요.</p>
 
       {secondsLeft > 0 ? (
         <div className="qr-box">
@@ -179,7 +183,7 @@ function ConnectedCard({
           <button className="text-button" onClick={() => setSecondsLeft(0)}>숨기기</button>
         </div>
       ) : (
-        <button className="add-button" onClick={() => setSecondsLeft(QR_SECONDS)}><QrCode size={16} /> 상대 폰 연결 QR 보여 주기</button>
+        <button className="add-button wide" onClick={() => setSecondsLeft(QR_SECONDS)}><QrCode size={16} /> 상대 폰 연결 QR 보여 주기</button>
       )}
 
       <div className={`sync-line ${status}`}>
@@ -193,7 +197,7 @@ function ConnectedCard({
       <details className="explain">
         <summary><ShieldCheck size={14} /> 복구 코드</summary>
         <p>두 폰을 함께 잃어버렸을 때 쓰는 코드예요. 비밀번호 관리 앱 같은 안전한 곳에만 저장하세요. 이 코드가 있으면 누구나 기록을 열 수 있어요.</p>
-        <button className="add-button" onClick={() => void navigator.clipboard?.writeText(pairing).then(() => setCopied(true))}>
+        <button className="add-button wide" onClick={() => void navigator.clipboard?.writeText(pairing).then(() => setCopied(true))}>
           <Copy size={16} /> {copied ? "복사했어요" : "복구 코드 복사"}
         </button>
       </details>

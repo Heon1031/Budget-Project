@@ -265,9 +265,12 @@ export default function Home() {
               onDisconnect={() => void disconnect()}
               onSync={() => void shared.syncNow()}
             />
-            <button className="text-button" onClick={() => {
-              if (confirm(vault ? "모든 계획을 예시값으로 바꿀까요? 상대 폰도 함께 바뀌어요." : "모든 계획을 예시값으로 바꿀까요?")) setState(initialState);
-            }}>예시값으로 초기화</button>
+            <section className="card reset-card">
+              <p className="muted small">모든 계획을 앱이 처음 넣어 둔 예시로 되돌려요.</p>
+              <button className="text-button reset-button" onClick={() => {
+                if (confirm(vault ? "모든 계획을 예시값으로 바꿀까요? 상대 폰도 함께 바뀌어요." : "모든 계획을 예시값으로 바꿀까요?")) setState(initialState);
+              }}>예시값으로 초기화</button>
+            </section>
           </SettingsBoard>
         )}
       </div>
