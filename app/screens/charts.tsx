@@ -23,7 +23,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { BucketIcon, FixedCategory } from "../lib/calc/plan";
-import { won } from "./fields";
+import { shortWon as shortWonPlain, won } from "./fields";
 
 // 그래프 부품. 색은 globals.css의 --chart-* 토큰(색약 검증 통과)만 쓴다.
 
@@ -112,44 +112,34 @@ export function Legend({ segments, total }: { segments: Segment[]; total: number
         <li key={segment.label}>
           <i style={{ background: segment.color }} />
           <span>{segment.label}</span>
-          <b>{total > 0 ? Math.round((Math.max(0, segment.value) / total) * 100) : 0}%</b>
+          <b>{shortWonPlain(segment.value)}</b>
+          <small>{total > 0 ? Math.round((Math.max(0, segment.value) / total) * 100) : 0}%</small>
         </li>
       ))}
     </ul>
   );
 }
 
-// 12달 쌓이는 막대: 한 가지 색(크기), 마지막 막대만 숫자를 단다. 막대를 누르면 그 달 금액.
-export function GrowthBars({ monthly, months = 12 }: { monthly: number; months?: number }) {
-  const [active, setActive] = useState<number | null>(null);
-  const width = 300;
-  const height = 72;
-  const barWidth = width / months - 4;
+// 1년 모일 돈이 누구에게서 오는지: 한 줄 막대를 두 사람 몫으로 나눈다(2px 틈). 숫자는 아래 범례에 직접.
+export function SaveSplit({ people }: { people: { name: string; monthly: number }[] }) {
+  const total = people.reduce((sum, person) => sum + Math.max(0, person.monthly), 0);
   return (
-    <figure className="growth">
-      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`매달 ${won(monthly)}씩 ${months}달 쌓이는 모습`}>
-        {Array.from({ length: months }, (_, index) => {
-          const value = monthly * (index + 1);
-          const barHeight = Math.max(2, ((index + 1) / months) * (height - 4));
-          return (
-            <rect
-              key={index}
-              x={index * (width / months) + 2}
-              y={height - barHeight}
-              width={barWidth}
-              height={barHeight}
-              rx={3}
-              className={active === index || (active === null && index === months - 1) ? "on" : ""}
-              onPointerEnter={() => setActive(index)}
-              onPointerLeave={() => setActive(null)}
-              onClick={() => setActive(index)}
-            >
-              <title>{`${index + 1}달 뒤 ${won(value)}`}</title>
-            </rect>
-          );
-        })}
-      </svg>
-      <figcaption>{active === null ? "12달 뒤" : `${active + 1}달 뒤 ${won(monthly * (active + 1))}`}</figcaption>
+    <figure className="save-split">
+      <div className="save-split-bar" role="img" aria-label={people.map((p) => `${p.name} 1년 ${won(p.monthly * 12)}`).join(", ")}>
+        {people.map((person, index) => (
+          <span key={index} className={`who-${index + 1}`} style={{ flexGrow: total > 0 ? Math.max(0, person.monthly) : 1 }} />
+        ))}
+      </div>
+      <figcaption>
+        {people.map((person, index) => (
+          <span key={index}>
+            <i className={`who-${index + 1}`} />
+            <span>{person.name}</span>
+            <b>{shortWonPlain(person.monthly * 12)}</b>
+            <small>월 {shortWonPlain(person.monthly)}</small>
+          </span>
+        ))}
+      </figcaption>
     </figure>
   );
 }

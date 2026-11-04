@@ -24,6 +24,7 @@ import { forgetCache, useSharedRecords } from "./lib/secure/sync";
 import { clearVault, loadVault, type Vault } from "./lib/secure/vault";
 import { SettingsBoard } from "./screens/settings-board";
 import { WishBoard } from "./screens/wish-board";
+import { UnitContext, UnitFilter } from "./screens/fields";
 
 type Tab = "flow" | "buckets" | "wish" | "house" | "settings";
 
@@ -65,6 +66,26 @@ export default function Home() {
   const [hydrated, setHydrated] = useState(false);
   const [vault, setVault] = useState<Vault | null>(null);
   const [tab, setTab] = useState<Tab>("flow");
+  // 금액 단위(원 · 만원 · 억원): 이 폰에서만 기억하는 보기 설정. 기본은 만원.
+  // 첫 화면(흐름)에는 금액 칸이 없어서 서버 렌더와 어긋나지 않는다.
+  const [unit, setUnitState] = useState(() => {
+    if (typeof window === "undefined") return 1;
+    try {
+      const raw = window.localStorage.getItem("duri-unit");
+      const saved = raw === null ? 1 : Number(raw);
+      return saved >= 0 && saved <= 2 && Number.isInteger(saved) ? saved : 1;
+    } catch {
+      return 1;
+    }
+  });
+  const setUnit = (next: number) => {
+    setUnitState(next);
+    try {
+      window.localStorage.setItem("duri-unit", String(next));
+    } catch {
+      // 저장이 막힌 브라우저면 이번에만 바꾼다.
+    }
+  };
   // 잠금이 켜진 폰은 Face ID · 지문(안 되면 폰 PIN)으로 열기 전까지 기록을 풀지 않는다.
   const [unlocked, setUnlocked] = useState(false);
   const activeVault = vault && unlocked ? vault : null;
@@ -194,7 +215,9 @@ export default function Home() {
         <span className="save-dot">{vault ? "● 둘이 함께 · 암호화" : "● 이 폰에만 저장"}</span>
       </header>
 
+      <UnitContext.Provider value={unit}>
       <div className="layout" id="top">
+        {tab !== "flow" && <UnitFilter unit={unit} onChange={setUnit} />}
         {tab === "flow" && (
           <FlowBoard
             flow={flow}
@@ -247,6 +270,7 @@ export default function Home() {
           </SettingsBoard>
         )}
       </div>
+      </UnitContext.Provider>
 
       <footer>
         <span>둘이자산 · 먼저 떼고, 남은 돈은 마음 편히</span>

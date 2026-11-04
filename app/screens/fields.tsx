@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { createContext, useContext, useLayoutEffect, useRef, useState } from "react";
 
 export const won = (value: number) => `${Math.round(Math.max(0, value)).toLocaleString("ko-KR")}원`;
 export const signedWon = (value: number) =>
@@ -8,20 +8,27 @@ export const signedWon = (value: number) =>
 export const manwon = (value: number) => `${Math.round(Math.max(0, value) / 10_000).toLocaleString("ko-KR")}만원`;
 export const parseWon = (value: string) => Number(value.replace(/[^\d]/g, "")) || 0;
 
-// 금액 단위: 버튼을 누를 때마다 원 → 천 → 만 → 백만 → 억 순서로 바뀐다. 「7」 + 억 = 7억 원.
-const UNITS = [
+// 금액 단위: 화면 위 「단위」 필터 하나로 모든 금액 칸이 함께 바뀐다(원 · 만원 · 억원). 「7」 + 억원 = 7억 원.
+export const UNITS = [
   { label: "원", size: 1 },
-  { label: "천", size: 1_000 },
-  { label: "만", size: 10_000 },
-  { label: "백만", size: 1_000_000 },
-  { label: "억", size: 100_000_000 },
+  { label: "만원", size: 10_000 },
+  { label: "억원", size: 100_000_000 },
 ] as const;
+export const UnitContext = createContext(1);
 
-// 처음 보여 줄 단위: 딱 떨어지는 가장 큰 단위(억 · 만)를 고르고, 아니면 원.
-function pickUnit(value: number) {
-  if (value >= 100_000_000 && value % 10_000_000 === 0) return 4;
-  if (value >= 10_000 && value % 1_000 === 0) return 2;
-  return 0;
+export function UnitFilter({ unit, onChange }: { unit: number; onChange: (unit: number) => void }) {
+  return (
+    <div className="unit-filter" role="radiogroup" aria-label="금액 단위">
+      <span>단위</span>
+      <div className="segmented">
+        {UNITS.map((u, index) => (
+          <button key={u.label} role="radio" aria-checked={unit === index} className={unit === index ? "active" : ""} onClick={() => onChange(index)}>
+            {u.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 const withCommas = (text: string) => {
@@ -48,12 +55,14 @@ export function readWon(value: number) {
 }
 
 // 금액 입력: 쉼표를 넣어도 커서가 튀지 않고, 누르면 전체가 선택돼 바로 고쳐 쓸 수 있다.
-export function AmountInput({ value, onChange, label }: { value: number; onChange: (value: number) => void; label?: string }) {
-  const [unit, setUnit] = useState(() => pickUnit(value));
+// 예시값이면 작고 옅은 안내 글자(placeholder)로만 보이고, 칸을 누르면 사라져 바로 우리 숫자를 친다.
+export function AmountInput({ value, onChange, label, example = false }: { value: number; onChange: (value: number) => void; label?: string; example?: boolean }) {
+  const unit = useContext(UnitContext);
   const [draft, setDraft] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const caret = useRef<number | null>(null);
   const size = UNITS[unit].size;
+  const shown = toText(value, size);
 
   // 쉼표가 새로 생겨도 「입력한 숫자 몇 개 뒤」 자리에 커서를 다시 둔다.
   useLayoutEffect(() => {
@@ -73,15 +82,15 @@ export function AmountInput({ value, onChange, label }: { value: number; onChang
   });
 
   return (
-    <span className="amount-input">
+    <span className={`amount-input ${example ? "is-example" : ""}`}>
       <input
         ref={inputRef}
         inputMode={unit === 0 ? "numeric" : "decimal"}
-        aria-label={label}
-        placeholder="0"
-        value={draft !== null ? withCommas(draft) : toText(value, size)}
+        aria-label={example ? `${label ?? "금액"} (예시 ${shown || 0})` : label}
+        placeholder={example ? shown || "0" : "0"}
+        value={draft !== null ? withCommas(draft) : example ? "" : shown}
         onFocus={(event) => {
-          setDraft(toText(value, size).replace(/,/g, ""));
+          setDraft(example ? "" : shown.replace(/,/g, ""));
           event.target.select();
         }}
         onBlur={() => setDraft(null)}
@@ -97,18 +106,7 @@ export function AmountInput({ value, onChange, label }: { value: number; onChang
           onChange(Math.round((Number(text) || 0) * size));
         }}
       />
-      <button
-        type="button"
-        className="unit-button"
-        aria-label={`단위 ${UNITS[unit].label}원, 눌러서 바꾸기`}
-        onClick={(event) => {
-          event.preventDefault();
-          setUnit((unit + 1) % UNITS.length);
-          setDraft(null);
-        }}
-      >
-        {UNITS[unit].label === "원" ? "원" : `${UNITS[unit].label}원`}
-      </button>
+      <b className="unit-suffix">{UNITS[unit].label}</b>
     </span>
   );
 }
@@ -124,16 +122,16 @@ export function MoneyField({
   value: number;
   onChange: (value: number) => void;
   hint?: string;
-  // 아직 바꾸지 않은 예시값이면 옅은 회색으로 보인다.
+  // 아직 바꾸지 않은 예시값이면 작고 옅은 안내 글자로만 보이고, 누르면 사라진다.
   example?: boolean;
 }) {
   return (
     <div className="field">
       <span>{label}{hint && <small>{hint}</small>}</span>
-      <div className={`money-field ${example ? "is-example" : ""}`}>
-        <AmountInput value={value} onChange={onChange} label={label} />
+      <div className="money-field">
+        <AmountInput value={value} onChange={onChange} label={label} example={example} />
       </div>
-      {value >= 10_000 && <em className="money-read">{readWon(value)}</em>}
+      {value >= 10_000 && !example && <em className="money-read">{readWon(value)}</em>}
     </div>
   );
 }

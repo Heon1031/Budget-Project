@@ -1,11 +1,11 @@
 "use client";
 
 import { CalendarDays, Check, ChevronRight, House, Info, PiggyBank, TriangleAlert, Wallet } from "lucide-react";
-import { Donut, GrowthBars, Legend, Ring, bucketColor, type Segment } from "./charts";
+import { Donut, Legend, Ring, SaveSplit, bucketColor, type Segment } from "./charts";
 import { koreanWon, shortWon } from "./fields";
 import type { Flow } from "../lib/calc/plan";
 
-// 첫 화면: 1년 뒤 모일 돈(막대), 각자 월급이 바구니로 어떻게 나뉘는지(도넛, 가운데 = 마음 편히 쓸 돈), 내 집까지(고리).
+// 첫 화면: 1년 뒤 모일 돈(두 사람 몫 막대), 각자 월급이 바구니로 어떻게 나뉘는지(도넛, 가운데 = 마음 편히 쓸 돈), 내 집까지(고리).
 
 export function FlowBoard({
   flow,
@@ -24,18 +24,14 @@ export function FlowBoard({
     <div className="content">
       {example && (
         <button className="example-banner" onClick={() => onOpen("buckets")}>
-          <Info size={16} /> 회색 숫자는 예시예요 · 나누기 · 설정에서 우리 숫자로 바꿔 주세요
+          <Info size={16} /> 옅은 숫자는 예시예요 · 칸을 눌러 우리 숫자를 넣어 주세요
         </button>
       )}
       <section className="summary-main hero">
         <span className="hero-label"><PiggyBank size={16} /> 1년 뒤 모이는 돈</span>
         <strong>{koreanWon(flow.yearSaved)}</strong>
-        <GrowthBars monthly={flow.monthlySaved} />
-        <div className="hero-chips">
-          {flow.people.map((person, index) => (
-            <span key={index}><PiggyBank size={14} /> {names[index]} {shortWon(person.saveMonthly)}/월</span>
-          ))}
-        </div>
+        <p className="hero-sub">매달 {shortWon(flow.monthlySaved)}씩 · 12달</p>
+        <SaveSplit people={flow.people.map((person, index) => ({ name: names[index], monthly: person.saveMonthly }))} />
       </section>
 
       <section className="card">

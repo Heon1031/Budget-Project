@@ -95,11 +95,14 @@ export function BucketBoard({
               );
             })()}
             <ul className="item-list">
-              {bucket.items.map((item) => (
-                <li key={item.id} className={isExampleItem(who, bucket.id, item) ? "is-example" : ""}>
+              {bucket.items.map((item) => {
+                const example = isExampleItem(who, bucket.id, item);
+                return (
+                <li key={item.id} className={example ? "is-example" : ""}>
                   <input
                     className="item-name"
-                    value={item.name}
+                    value={example ? "" : item.name}
+                    placeholder={example ? item.name : "항목 이름"}
                     maxLength={40}
                     aria-label="항목 이름"
                     onChange={(event) => updateBucket(bucket.id, { items: bucket.items.map((it) => (it.id === item.id ? { ...it, name: event.target.value } : it)) })}
@@ -108,12 +111,14 @@ export function BucketBoard({
                     <AmountInput
                       label={`${item.name} 금액`}
                       value={item.amount}
+                      example={example}
                       onChange={(amount) => updateBucket(bucket.id, { items: bucket.items.map((it) => (it.id === item.id ? { ...it, amount } : it)) })}
                     />
                   </span>
                   <button className="icon-ghost" aria-label={`${item.name} 지우기`} onClick={() => updateBucket(bucket.id, { items: bucket.items.filter((it) => it.id !== item.id) })}><Trash2 size={16} /></button>
                 </li>
-              ))}
+                );
+              })}
             </ul>
             <button className="add-button" onClick={() => updateBucket(bucket.id, { items: [...bucket.items, { id: newId("i"), name: "", amount: 0 }] })}><Plus size={16} /> 항목</button>
           </section>

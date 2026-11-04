@@ -466,13 +466,6 @@ footer p { margin: 0; }
 .card-title, .sub-title { justify-content: flex-start; }
 .hero { gap: 6px; }
 .hero-label { justify-content: flex-start; font-size: var(--fs-small); font-weight: 600; opacity: .9; }
-.hero-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
-.hero-chips span { display: inline-flex; align-items: center; gap: 4px; padding: 5px 10px; border-radius: 999px; background: rgba(255, 255, 255, .18); font-size: var(--fs-caption); font-weight: 600; }
-.growth { margin: 8px 0 0; }
-.growth svg { display: block; width: 100%; height: 72px; }
-.growth rect { fill: rgba(255, 255, 255, .35); cursor: pointer; }
-.growth rect.on { fill: #ffffff; }
-.growth figcaption { margin-top: 4px; font-size: var(--fs-caption); opacity: .85; text-align: right; }
 .person-donuts { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
 .person-donut { display: grid; justify-items: center; gap: 8px; padding: 14px 8px; border-radius: 20px; background: var(--surface-2); }
 .person-donut .who { font-size: var(--fs-body); }
@@ -484,7 +477,7 @@ footer p { margin: 0; }
 .donut-center strong { font-size: 20px; font-weight: 800; letter-spacing: -0.03em; }
 .donut-center small { color: var(--ink-3); font-size: var(--fs-caption); }
 .legend { width: 100%; margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
-.legend li { display: grid; grid-template-columns: 10px 1fr auto; align-items: center; gap: 6px; font-size: var(--fs-caption); color: var(--ink-2); }
+.legend li { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto auto; align-items: center; gap: 6px; font-size: var(--fs-caption); color: var(--ink-2); }
 .legend li i { width: 10px; height: 10px; border-radius: 3px; }
 .legend li b { color: var(--ink); font-variant-numeric: tabular-nums; }
 .legend small { color: var(--ink-3); font-size: var(--fs-caption); }
@@ -642,13 +635,10 @@ button.person-donut { border: 0; color: inherit; font: inherit; cursor: pointer;
 .money-field { padding: 0 6px 0 12px; }
 .amount-input { display: flex; align-items: center; flex: 1; min-width: 0; gap: 6px; }
 .amount-input input { width: 100%; min-width: 0; min-height: 44px; border: 0; outline: 0; background: transparent; padding: 0; text-align: right; font-size: var(--fs-input); font-weight: 700; font-variant-numeric: tabular-nums; }
-.unit-button { flex: 0 0 auto; min-width: 44px; min-height: 44px; padding: 0 8px; border: 0; border-radius: 9px; background: var(--brand-weak); color: var(--brand); font-size: var(--fs-small); font-weight: 700; white-space: nowrap; }
 .money-read { display: block; margin-top: 4px; color: var(--ink-3); font-size: var(--fs-caption); font-style: normal; text-align: right; }
 .is-example input, .is-example .item-name, input.is-example, .is-example > b { color: var(--ink-3); font-weight: 500; }
 .example-banner { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-radius: 16px; background: var(--warn-weak); color: var(--warn); font-size: var(--fs-small); font-weight: 600; }
 .item-amount .amount-input input { min-height: 44px; }
-.item-amount .unit-button { min-width: 40px; min-height: 44px; padding: 0 4px; background: transparent; color: var(--ink-3); font-size: var(--fs-small); font-weight: 600; }
-.item-amount .unit-button:active { background: var(--surface-2); }
 .wish-list li.is-example .wish-head b, .wish-list li.is-example .wish-head small { color: var(--ink-3); font-weight: 500; }
 button.example-banner { width: 100%; border: 0; text-align: left; cursor: pointer; }
 
@@ -658,7 +648,7 @@ button.example-banner { width: 100%; border: 0; text-align: left; cursor: pointe
 .brand { min-height: 44px; }
 button { -webkit-tap-highlight-color: transparent; transition: transform .12s ease, background-color .15s ease, color .15s ease; }
 button:active:not(:disabled) { transform: scale(.97); }
-.tabbar button:active, .item-amount .unit-button:active { transform: none; }
+.tabbar button:active { transform: none; }
 .layout > * { animation: rise .24s cubic-bezier(.2, .8, .2, 1) both; }
 .sheet-backdrop { animation: fade .2s ease both; }
 .sheet { animation: sheet-up .28s cubic-bezier(.2, .8, .2, 1) both; }
@@ -672,3 +662,64 @@ button:active:not(:disabled) { transform: scale(.97); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* 버튼 모양 통일 (2026-11-04)
+   - 큰 버튼(한 카드의 주 버튼 · 위험 버튼): 높이 52 · 둥글기 14 · 좌우 16
+   - 작은 버튼(추가 · 복사 · 지금 맞추기 등): 높이 44 · 둥글기 12 · 좌우 16
+   - 아이콘 버튼: 44×44 · 둥글기 12
+   - 두 칸 고르기: 바깥 둥글기 14 · 안쪽 4px 띄우고 둥글기 10 (바깥 - 안쪽 여백 = 안쪽 둥글기) */
+:root { --btn-h: 52px; --btn-h-s: 44px; --btn-r: 14px; --btn-r-s: 12px; --btn-px: 16px; }
+button.primary, button.danger, .export-button, .promise-actions button:not(.primary) {
+  min-height: var(--btn-h); padding: 0 var(--btn-px); border-radius: var(--btn-r);
+}
+.add-button, .breakdown-button, .market-row button, .wish-actions button, .code-box button, .sync-line button, .chip-row button {
+  min-height: var(--btn-h-s); padding: 0 var(--btn-px); border-radius: var(--btn-r-s);
+}
+.icon-ghost, .icon-close, .icon-actions button, .month-nav button, .expense-list button {
+  width: var(--btn-h-s); height: var(--btn-h-s); min-height: var(--btn-h-s); padding: 0; border-radius: var(--btn-r-s);
+}
+.toggle-group, .segmented { padding: 4px; border-radius: var(--btn-r); }
+.toggle-group button, .segmented button { min-height: 40px; padding: 0 var(--btn-px); border-radius: 10px; }
+.toggle-group { min-height: 48px; }
+.example-banner { border-radius: var(--radius-s); padding: 12px var(--btn-px); }
+
+/* 금액 단위 필터: 화면 맨 위 한 줄. 모든 금액 칸이 이걸 따른다. */
+.unit-filter { display: flex; align-items: center; justify-content: flex-end; gap: 10px; color: var(--ink-3); font-size: var(--fs-small); font-weight: 600; }
+.segmented { display: inline-flex; gap: 2px; background: color-mix(in srgb, var(--ink) 6%, transparent); }
+.segmented button { min-height: 36px; padding: 0 14px; border: 0; background: transparent; color: var(--ink-2); font-size: var(--fs-small); font-weight: 600; }
+.segmented button.active { background: var(--surface); color: var(--ink); font-weight: 700; box-shadow: 0 1px 3px rgba(0, 0, 0, .12); }
+.amount-input { display: flex; align-items: center; flex: 1; min-width: 0; }
+.unit-suffix { flex: 0 0 auto; margin-left: 4px; color: var(--ink-3); font-size: var(--fs-small); font-weight: 600; white-space: nowrap; }
+
+/* 예시값: 칸 안에 작고 옅은 안내 글자로만. 누르면(포커스) 사라진다. */
+.is-example input::placeholder, input.item-name::placeholder { color: #8b95a1; font-size: 14px; font-weight: 400; opacity: 1; }
+.is-example input:focus::placeholder, input.item-name:focus::placeholder { color: transparent; }
+.is-example .unit-suffix { color: #8b95a1; font-weight: 400; }
+li.is-example .icon-ghost { opacity: .6; }
+@media (prefers-color-scheme: dark) {
+  .is-example input::placeholder, input.item-name::placeholder, .is-example .unit-suffix { color: #6b7481; }
+}
+
+/* 첫 화면 한눈 막대: 1년 모일 돈 = 남편 몫 + 아내 몫 */
+.hero-sub { margin: 0; color: var(--hero-muted); font-size: var(--fs-small); font-weight: 600; }
+.save-split { margin: 14px 0 0; }
+.save-split-bar { display: flex; gap: 2px; height: 14px; padding: 2px; border-radius: 999px; background: rgba(255, 255, 255, .16); }
+.save-split-bar span { min-width: 6px; border-radius: 999px; }
+.save-split .who-1 { background: #ffffff; }
+.save-split .who-2 { background: rgba(255, 255, 255, .55); }
+.save-split figcaption { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+.save-split figcaption > span { display: grid; grid-template-columns: 10px auto 1fr; align-items: baseline; column-gap: 6px; padding: 10px 12px; border-radius: var(--radius-s); background: rgba(255, 255, 255, .12); }
+.save-split figcaption i { width: 10px; height: 10px; border-radius: 3px; align-self: center; }
+.save-split figcaption span > span { font-size: var(--fs-small); font-weight: 600; opacity: .9; }
+.save-split figcaption b { justify-self: end; font-size: var(--fs-body); font-weight: 800; font-variant-numeric: tabular-nums; }
+.save-split figcaption small { grid-column: 2 / -1; color: var(--hero-muted); font-size: var(--fs-caption); }
+.legend li small { min-width: 30px; text-align: right; }
+.legend li { min-height: 22px; }
+.donut-center strong { font-size: 22px; }
+.legend li > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.person-donut .legend li { grid-template-columns: 10px minmax(0, 1fr) auto; }
+.person-donut .legend li small { display: none; }
+.toggle-group button { min-height: 44px; }
+.toggle-group { min-height: 0; }
+.segmented { padding: 2px; border-radius: var(--btn-r-s); }
+.segmented button { min-height: 40px; min-width: 52px; border-radius: 10px; }
