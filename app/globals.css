@@ -723,3 +723,19 @@ li.is-example .icon-ghost { opacity: .6; }
 .toggle-group { min-height: 0; }
 .segmented { padding: 2px; border-radius: var(--btn-r-s); }
 .segmented button { min-height: 40px; min-width: 52px; border-radius: 10px; }
+
+/* 쪼갠 막대: 바깥 양 끝만 둥글고, 조각끼리 붙는 면은 직선 (2px 틈) */
+.alloc-bar span, .save-split-bar span, .price-bar span, .ratio-bar span { border-radius: 0; }
+.alloc-bar span:first-child, .save-split-bar span:first-child { border-radius: 999px 0 0 999px; }
+.alloc-bar span:last-child, .save-split-bar span:last-child { border-radius: 0 999px 999px 0; }
+.alloc-bar span:only-child, .save-split-bar span:only-child { border-radius: 999px; }
+
+/* 나누기 목표 막대: 위에 「담은 ○%」, 아래 눈금에 「목표 ○%」 */
+.goal-graph { position: relative; margin-top: 12px; padding: 22px 0 22px; }
+.goal-graph .goal-bar { margin-top: 0; height: 12px; }
+.goal-tag { position: absolute; white-space: nowrap; font-size: var(--fs-caption); line-height: 18px; }
+.goal-tag.now { top: 0; color: var(--ink-2); }
+.goal-tag.now b { color: var(--ink); font-size: var(--fs-small); }
+.goal-tag.goal { bottom: 0; color: var(--ink-3); font-weight: 600; }
+.goal-graph .goal-bar i { top: -5px; bottom: -5px; }
+.goal-text { margin-top: 2px; justify-content: flex-end; }

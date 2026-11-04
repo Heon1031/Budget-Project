@@ -10,6 +10,10 @@ import { BUCKET_ICONS, BUCKET_TEMPLATE, initialState, newId, type Bucket, type B
 const isExampleItem = (who: 0 | 1, bucketId: string, item: BucketItem) =>
   initialState.people[who].buckets.some((bucket) => bucket.id === bucketId && bucket.items.some((it) => it.id === item.id && it.name === item.name && it.amount === item.amount));
 
+// 막대 위 · 아래 글자 자리: 양 끝에서는 안쪽으로 붙여 잘리지 않게.
+const tagAt = (at: number) =>
+  at > 82 ? { right: `${Math.max(0, 100 - at)}%` } : at < 18 ? { left: `${Math.max(0, at)}%` } : { left: `${at}%`, transform: "translateX(-50%)" };
+
 // 나누기: 각자 실수령을 바구니(%)로 나누고, 바구니 안에 매달 나가는 항목을 담는다.
 
 const KIND_LABEL: Record<BucketKind, string> = { save: "모으기", spend: "쓰기", free: "용돈" };
@@ -72,19 +76,22 @@ export function BucketBoard({
               <button className="icon-close" aria-label={`${bucket.name} 바구니 고치기`} onClick={() => setEditing(person.buckets[index])}><Settings2 size={18} /></button>
             </div>
             {(() => {
-              // 지금 담은 돈이 실수령의 몇 %인지, 목표(바구니 %)까지 얼마 남았는지. 막대 끝 눈금이 목표.
+              // 지금 담은 돈이 실수령의 몇 %인지(막대 위), 목표 바구니 %(막대 아래 눈금)를 그래프에 바로 적는다.
               const nowPercent = pf.net > 0 ? (bucket.planned / pf.net) * 100 : 0;
               const scale = Math.max(bucket.percent, nowPercent, 1);
               const goalAt = (bucket.percent / scale) * 100;
               const short = bucket.kind === "save" && bucket.left > 0;
               return (
                 <>
-                  <div className="goal-bar" aria-hidden="true">
-                    <span className={bucket.left < 0 && bucket.kind !== "save" ? "over" : ""} style={{ width: `${(nowPercent / scale) * 100}%` }} />
-                    <i style={{ left: `${goalAt}%` }} />
+                  <div className="goal-graph" role="img" aria-label={`담은 돈 ${Math.round(nowPercent)}%, 목표 ${bucket.percent}%`}>
+                    <span className="goal-tag now" style={tagAt((nowPercent / scale) * 100)}>담은 <b>{Math.round(nowPercent)}%</b></span>
+                    <div className="goal-bar">
+                      <span className={bucket.left < 0 && bucket.kind !== "save" ? "over" : ""} style={{ width: `${(nowPercent / scale) * 100}%` }} />
+                      <i style={{ left: `${goalAt}%` }} />
+                    </div>
+                    <span className="goal-tag goal" style={tagAt(goalAt)}>목표 {bucket.percent}%</span>
                   </div>
                   <p className="goal-text">
-                    <span>담은 돈 <b>{Math.round(nowPercent)}%</b> / 목표 {bucket.percent}%</span>
                     <b className={short ? "warn" : bucket.left < 0 && bucket.kind !== "save" ? "bad" : "good"}>
                       {bucket.kind === "save"
                         ? short ? `+${shortWon(bucket.left)} 더 담으면 채워요` : "목표 달성"
