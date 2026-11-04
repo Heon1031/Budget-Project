@@ -636,3 +636,17 @@ button.person-donut { border: 0; color: inherit; font: inherit; cursor: pointer;
 .goal-text > b.good { color: var(--good); }
 .goal-text > b.warn { color: var(--warn); }
 .goal-text > b.bad { color: var(--bad); }
+
+/* 금액 입력: 단위 버튼 · 읽기 · 예시값 */
+.money-field input:focus-visible, .amount-input input:focus-visible, .item-name:focus-visible, .rate-grid input:focus-visible, .bucket-percent input:focus-visible, .dual-inputs input:focus-visible { box-shadow: none; }
+.money-field { padding: 0 6px 0 12px; }
+.amount-input { display: flex; align-items: center; flex: 1; min-width: 0; gap: 6px; }
+.amount-input input { width: 100%; min-width: 0; min-height: 44px; border: 0; outline: 0; background: transparent; padding: 0; text-align: right; font-size: var(--fs-input); font-weight: 700; font-variant-numeric: tabular-nums; }
+.unit-button { flex: 0 0 auto; min-width: 44px; min-height: 36px; padding: 0 8px; border: 0; border-radius: 9px; background: var(--brand-weak); color: var(--brand); font-size: var(--fs-small); font-weight: 700; white-space: nowrap; }
+.money-read { display: block; margin-top: 4px; color: var(--ink-3); font-size: var(--fs-caption); font-style: normal; text-align: right; }
+.is-example input, .is-example .item-name, input.is-example, .is-example > b { color: var(--ink-3); font-weight: 500; }
+.example-banner { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-radius: 16px; background: var(--warn-weak); color: var(--warn); font-size: var(--fs-small); font-weight: 600; }
+.item-amount .amount-input input { min-height: 40px; }
+.item-amount .unit-button { min-width: 36px; min-height: 32px; padding: 0 6px; font-size: var(--fs-caption); }
+.wish-list li.is-example .wish-head b, .wish-list li.is-example .wish-head small { color: var(--ink-3); font-weight: 500; }
+button.example-banner { width: 100%; border: 0; text-align: left; cursor: pointer; }

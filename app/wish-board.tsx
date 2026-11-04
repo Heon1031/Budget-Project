@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Check, Clock, ListPlus, Repeat, Sparkles, TriangleAlert, Trash2, User, Users, Zap, type LucideIcon } from "lucide-react";
 import { Bar } from "./charts";
 import { MoneyField, shortWon } from "./fields";
-import { newId, type Flow, type Owner, type Wish } from "./lib/plan";
+import { initialState, newId, type Flow, type Owner, type Wish } from "./lib/plan";
 
 // 해볼까?: 하고 싶은 것을 지금 해도 되는지 한 줄로, 쓸 돈 대비 얼마인지 막대로 보여 준다.
 
@@ -114,7 +114,7 @@ export function WishBoard({
               const verdict = judgeWish(wish, flow);
               const OwnerIcon = ownerIcon(wish.owner);
               return (
-                <li key={wish.id}>
+                <li key={wish.id} className={initialState.wishes.some((example) => example.id === wish.id) ? "is-example" : ""}>
                   <div className="wish-head">
                     <span>
                       <b>{wish.name}</b>

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Users } from "lucide-react";
 import { MoneyField, won } from "./fields";
-import type { AppState, Person, calculateSalary } from "./lib/plan";
+import { initialState, type AppState, type Person, type calculateSalary } from "./lib/plan";
 
 // 설정: 두 사람의 월급(실수령 추정) · 매달 저축 · 투자, 공동 몫 나누는 방식, 모은 자산.
 
@@ -35,8 +35,8 @@ export function SettingsBoard({
               <span>{(person.name || (index === 0 ? "남편" : "아내")).slice(0, 1)}</span>
               <input aria-label={`${index + 1}번째 사람 이름`} value={person.name} onChange={(event) => onPerson(i, { name: event.target.value })} />
             </div>
-            <MoneyField label="세전 연봉" value={person.annualGross} onChange={(annualGross) => onPerson(i, { annualGross })} />
-            <MoneyField label="월 비과세 급여" hint="식대 등" value={person.monthlyNonTaxable} onChange={(monthlyNonTaxable) => onPerson(i, { monthlyNonTaxable })} />
+            <MoneyField label="세전 연봉" example={person.annualGross === initialState.people[i].annualGross} value={person.annualGross} onChange={(annualGross) => onPerson(i, { annualGross })} />
+            <MoneyField label="월 비과세 급여" hint="식대 등" example={person.monthlyNonTaxable === initialState.people[i].monthlyNonTaxable} value={person.monthlyNonTaxable} onChange={(monthlyNonTaxable) => onPerson(i, { monthlyNonTaxable })} />
             <div className="net-result">
               <span>{calc.isActual ? "급여명세서 실수령액" : "예상 월 실수령액 (추정)"}</span>
               <strong>{won(calc.net)}</strong>
@@ -61,7 +61,7 @@ export function SettingsBoard({
 
       <section className="card">
         <h3 className="card-title"><Users size={18} /> 둘이 함께</h3>
-        <MoneyField label="지금까지 모은 자산" value={state.plan.currentAssets} onChange={(currentAssets) => onState({ plan: { ...state.plan, currentAssets } })} />
+        <MoneyField label="지금까지 모은 자산" example={state.plan.currentAssets === initialState.plan.currentAssets} value={state.plan.currentAssets} onChange={(currentAssets) => onState({ plan: { ...state.plan, currentAssets } })} />
         <p className="muted small">저축 · 투자 · 생활비 같은 매달 돈은 「나누기」 탭의 바구니에 담아요.</p>
       </section>
 

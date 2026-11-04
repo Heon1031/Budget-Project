@@ -51,6 +51,15 @@ function startMonthlyWish(state: AppState, wish: Wish): AppState {
   return { ...state, people, wishes: state.wishes.filter((item) => item.id !== wish.id) };
 }
 
+// 연봉이나 바구니 항목이 아직 처음 예시 그대로인지(첫 화면 안내용).
+function isStillExample(state: AppState) {
+  return state.people.some((person, index) => {
+    const sample = initialState.people[index];
+    const sameItems = person.buckets.some((bucket) => bucket.items.some((item) => sample.buckets.some((b) => b.items.some((it) => it.id === item.id && it.amount === item.amount && it.name === item.name))));
+    return person.annualGross === sample.annualGross || sameItems;
+  });
+}
+
 export default function Home() {
   const [state, setState] = useState<AppState>(initialState);
   const [hydrated, setHydrated] = useState(false);
@@ -190,6 +199,7 @@ export default function Home() {
           <FlowBoard
             flow={flow}
             names={names}
+            example={isStillExample(state)}
             house={{ daysLeft: daysUntil(moveDate), have: houseCalc.willHave, need: houseCalc.needCash }}
             onOpen={setTab}
           />

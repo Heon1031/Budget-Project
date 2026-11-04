@@ -3,8 +3,12 @@
 import { useState } from "react";
 import { Plus, Trash2, TriangleAlert, Check, Settings2, User } from "lucide-react";
 import { BUCKET_ICON_MAP, bucketColor } from "./charts";
-import { RateInput, shortWon, won } from "./fields";
-import { BUCKET_ICONS, BUCKET_TEMPLATE, newId, type Bucket, type BucketIcon, type BucketKind, type Flow, type Person } from "./lib/plan";
+import { AmountInput, RateInput, shortWon, won } from "./fields";
+import { BUCKET_ICONS, BUCKET_TEMPLATE, initialState, newId, type Bucket, type BucketIcon, type BucketItem, type BucketKind, type Flow, type Person } from "./lib/plan";
+
+// 처음 들어 있던 예시 항목을 그대로 두었는지(이름 · 금액이 예시와 같음).
+const isExampleItem = (who: 0 | 1, bucketId: string, item: BucketItem) =>
+  initialState.people[who].buckets.some((bucket) => bucket.id === bucketId && bucket.items.some((it) => it.id === item.id && it.name === item.name && it.amount === item.amount));
 
 // 나누기: 각자 실수령을 바구니(%)로 나누고, 바구니 안에 매달 나가는 항목을 담는다.
 
@@ -92,7 +96,7 @@ export function BucketBoard({
             })()}
             <ul className="item-list">
               {bucket.items.map((item) => (
-                <li key={item.id}>
+                <li key={item.id} className={isExampleItem(who, bucket.id, item) ? "is-example" : ""}>
                   <input
                     className="item-name"
                     value={item.name}
@@ -101,14 +105,11 @@ export function BucketBoard({
                     onChange={(event) => updateBucket(bucket.id, { items: bucket.items.map((it) => (it.id === item.id ? { ...it, name: event.target.value } : it)) })}
                   />
                   <span className="item-amount">
-                    <input
-                      inputMode="numeric"
-                      aria-label={`${item.name} 금액`}
-                      value={item.amount ? item.amount.toLocaleString("ko-KR") : ""}
-                      placeholder="0"
-                      onChange={(event) => updateBucket(bucket.id, { items: bucket.items.map((it) => (it.id === item.id ? { ...it, amount: Number(event.target.value.replace(/[^\d]/g, "")) || 0 } : it)) })}
+                    <AmountInput
+                      label={`${item.name} 금액`}
+                      value={item.amount}
+                      onChange={(amount) => updateBucket(bucket.id, { items: bucket.items.map((it) => (it.id === item.id ? { ...it, amount } : it)) })}
                     />
-                    <b>원</b>
                   </span>
                   <button className="icon-ghost" aria-label={`${item.name} 지우기`} onClick={() => updateBucket(bucket.id, { items: bucket.items.filter((it) => it.id !== item.id) })}><Trash2 size={16} /></button>
                 </li>

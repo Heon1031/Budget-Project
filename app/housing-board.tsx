@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Banknote, CalendarDays, Check, CircleHelp, House, Landmark, Newspaper, Percent, SlidersHorizontal, TriangleAlert } from "lucide-react";
 import { Ring } from "./charts";
 import { MoneyField, RateInput, koreanWon, shortWon } from "./fields";
-import { HOUSE_STEPS, RULES, calculateHouse, stepDate, type HousePlan } from "./lib/housing";
+import { HOUSE_STEPS, RULES, calculateHouse, initialHouse, stepDate, type HousePlan } from "./lib/housing";
 import type { MarketInfo } from "./lib/market";
 
 // 1년 안 내 집 마련: 필요한 현금, 대출 가능액(추정), 모자란 돈, 매달 더 모을 돈, 잔금일 기준 할 일.
@@ -118,20 +118,21 @@ export function HousingBoard({
       <section className="card">
         <h3 className="card-title"><SlidersHorizontal size={18} /> 우리 조건</h3>
         <div className="form-grid">
-          <MoneyField label="목표 집값" value={house.targetPrice} onChange={(targetPrice) => onChange({ targetPrice })} />
+          <MoneyField label="목표 집값" example={house.targetPrice === initialHouse.targetPrice} value={house.targetPrice} onChange={(targetPrice) => onChange({ targetPrice })} />
           <label className="field">
             <span>잔금일(입주 예정일)</span>
             <input className="plain-input" type="date" value={moveDate} onChange={(event) => onChange({ moveDate: event.target.value })} />
           </label>
           <MoneyField
             label="매달 집 목돈"
+            example={house.monthlySaving === initialHouse.monthlySaving}
             hint={unassigned > 0 ? `여유 ${shortWon(unassigned)}` : "여유 없음"}
             value={house.monthlySaving}
             onChange={(monthlySaving) => onChange({ monthlySaving })}
           />
           <MoneyField label="돌려받을 전세보증금" value={house.jeonseDeposit} onChange={(jeonseDeposit) => onChange({ jeonseDeposit })} />
           <MoneyField label="기존 대출 1년 상환액" value={house.existingAnnualDebt} onChange={(existingAnnualDebt) => onChange({ existingAnnualDebt })} />
-          <MoneyField label="등기·이사·기타 비용" value={house.otherCosts} onChange={(otherCosts) => onChange({ otherCosts })} />
+          <MoneyField label="등기·이사·기타 비용" example={house.otherCosts === initialHouse.otherCosts} value={house.otherCosts} onChange={(otherCosts) => onChange({ otherCosts })} />
         </div>
         <div className="toggle-group wide">
           <button className={house.capitalArea ? "active" : ""} onClick={() => onChange({ capitalArea: true })}>수도권·규제</button>

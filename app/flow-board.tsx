@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, Check, ChevronRight, House, PiggyBank, TriangleAlert, Wallet } from "lucide-react";
+import { CalendarDays, Check, ChevronRight, House, Info, PiggyBank, TriangleAlert, Wallet } from "lucide-react";
 import { Donut, GrowthBars, Legend, Ring, bucketColor, type Segment } from "./charts";
 import { koreanWon, shortWon } from "./fields";
 import type { Flow } from "./lib/plan";
@@ -11,15 +11,22 @@ export function FlowBoard({
   flow,
   names,
   house,
+  example,
   onOpen,
 }: {
   flow: Flow;
   names: [string, string];
+  example: boolean;
   house: { daysLeft: number; have: number; need: number };
   onOpen: (tab: "buckets" | "wish" | "house" | "settings") => void;
 }) {
   return (
     <div className="content">
+      {example && (
+        <button className="example-banner" onClick={() => onOpen("buckets")}>
+          <Info size={16} /> 회색 숫자는 예시예요 · 나누기 · 설정에서 우리 숫자로 바꿔 주세요
+        </button>
+      )}
       <section className="summary-main hero">
         <span className="hero-label"><PiggyBank size={16} /> 1년 뒤 모이는 돈</span>
         <strong>{koreanWon(flow.yearSaved)}</strong>
