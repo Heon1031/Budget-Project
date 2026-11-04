@@ -782,3 +782,43 @@ li.is-example .icon-ghost { opacity: .6; }
 .manager-tip.warn > svg { color: var(--bad); }
 .manager-tip button { min-height: 44px; padding: 0 12px; border: 0; border-radius: 10px; background: var(--brand); color: var(--on-brand); font-size: var(--fs-small); font-weight: 700; white-space: nowrap; }
 .manager-tip.warn button { background: var(--bad); color: #ffffff; }
+
+/* 바꿀 일 */
+.changes-chip { margin-left: 8px; min-height: 28px; padding: 0 10px; border: 0; border-radius: 999px; background: var(--warn-weak); color: var(--warn); font-size: var(--fs-caption); font-weight: 800; vertical-align: middle; }
+.changes-chip::before { content: ""; position: absolute; inset: -8px; }
+.changes-chip { position: relative; }
+.alloc-bar .ghost-mark { position: absolute; top: -3px; bottom: -3px; width: 0; border-left: 2px dashed var(--ink-2); opacity: .55; }
+.changes-card { display: grid; gap: 14px; }
+.changes-card.start { grid-template-columns: 40px minmax(0, 1fr); align-items: start; }
+.changes-card.start > button { grid-column: 1 / -1; margin-top: 0; }
+.changes-card.start b { font-size: var(--fs-body); }
+.changes-card.start p { margin: 4px 0 0; color: var(--ink-2); font-size: var(--fs-small); line-height: 1.55; }
+.changes-icon { width: 40px; height: 40px; display: grid; place-items: center; border-radius: var(--btn-r-s); background: var(--brand-weak); color: var(--brand); }
+.changes-head { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 12px; align-items: center; }
+.changes-head b { display: block; font-size: var(--fs-title); font-weight: 800; }
+.changes-head small { color: var(--ink-3); font-size: var(--fs-caption); }
+.change-group { padding: 14px; border-radius: var(--radius-s); background: var(--surface-2); }
+.change-group-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.change-group-head b { font-size: var(--fs-body); }
+.change-group-head span { display: inline-flex; align-items: center; gap: 2px; font-size: var(--fs-small); font-weight: 700; font-variant-numeric: tabular-nums; }
+.change-group-head .down, .changes-card li b.down { color: var(--brand); }
+.change-group-head .up, .changes-card li b.up { color: var(--good); }
+.change-bars { display: grid; gap: 3px; margin: 10px 0 4px; }
+.change-bars i { display: block; height: 6px; border-radius: 999px; min-width: 4px; }
+.change-bars .before { background: var(--line-strong); }
+.change-bars .after.down { background: var(--brand); }
+.change-bars .after.up { background: var(--good); }
+.changes-card ol { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 2px; }
+.changes-card li { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 10px 0; border-top: 1px solid var(--line); }
+.changes-card li:first-child { border-top: 0; }
+.changes-card li p { margin: 0; font-size: var(--fs-small); font-weight: 600; line-height: 1.5; }
+.changes-card li b { font-size: var(--fs-small); font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.step-no { width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; background: var(--surface); color: var(--ink); font-size: var(--fs-caption); font-weight: 800; }
+.changes-card li.warn .step-no { background: var(--warn-weak); color: var(--warn); }
+.changes-card li.warn p { color: var(--warn); }
+.changes-card .where { display: inline-block; margin-top: 4px; padding: 2px 8px; border-radius: 999px; background: var(--surface); color: var(--ink-2); font-size: var(--fs-caption); font-weight: 600; }
+.changes-card .note { display: block; margin-top: 4px; color: var(--ink-3); font-size: var(--fs-caption); line-height: 1.5; }
+.changes-sum { margin: 0; color: var(--ink-2); font-size: var(--fs-small); }
+.changes-card > button.primary { margin-top: 0; }
+.changes-revert { display: inline-flex; align-items: center; justify-content: center; gap: 4px; margin: -6px 0 0; color: var(--ink-2); text-decoration: none; }
+.changes-none { display: flex; align-items: center; gap: 6px; margin: 0; padding: 0 4px; color: var(--ink-3); font-size: var(--fs-small); }

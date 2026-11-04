@@ -1,3 +1,4 @@
+import { cleanConfirmed, type ConfirmedPlan } from "./changes";
 // 두 사람의 월급 · 저축 · 고정지출 · 하고 싶은 것을 담는 계획. 서버에는 암호화돼 「plan」 기록 하나로 간다.
 import { initialHouse, type HousePlan } from "./housing";
 
@@ -11,6 +12,8 @@ export type Person = {
   monthlyPension: number;
   monthlyEmergency: number;
   buckets: Bucket[];
+  // 마지막으로 「이대로 확정」한 계획. 지금 계획과 비교해 은행 앱에서 바꿀 일을 정리한다(없으면 아직 확정 전).
+  confirmed?: ConfirmedPlan;
   // 각자 정한 목표 비율(실수령 기준, 합 100): 꼭 필요한 돈 · 하고 싶은 돈 · 모으는 돈
   targetNeeds: number;
   targetWants: number;
@@ -204,7 +207,8 @@ export function restoreState(saved: unknown): AppState {
       const person = renameDefault(mergeDefaults(initialState.people[index], people[index]), index === 0 ? "나" : "배우자", index === 0 ? "남편" : "아내");
       const raw = (people[index] as Partial<Person> | undefined)?.buckets;
       const fixedCosts = Array.isArray(data.fixedCosts) ? data.fixedCosts.flatMap(cleanFixed) : [];
-      return { ...person, buckets: Array.isArray(raw) ? raw.flatMap(cleanBucket) : migrateBuckets(person, index as 0 | 1, fixedCosts) };
+      const confirmed = cleanConfirmed((people[index] as Partial<Person> | undefined)?.confirmed);
+      return { ...person, buckets: Array.isArray(raw) ? raw.flatMap(cleanBucket) : migrateBuckets(person, index as 0 | 1, fixedCosts), ...(confirmed ? { confirmed } : {}) };
     }) as [Person, Person],
     plan: mergeDefaults(initialState.plan, data.plan),
     house: mergeDefaults(initialHouse, data.house),

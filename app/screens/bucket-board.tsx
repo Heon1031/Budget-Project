@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Plus, Trash2, TriangleAlert, Check, ChevronDown, Settings2, Sparkles, User } from "lucide-react";
 import { adviseBuckets } from "../lib/calc/advice";
+import { changeCount, diffPlan, snapshotPlan } from "../lib/calc/changes";
+import { ChangesCard } from "./changes-card";
 import { BUCKET_ICON_MAP, bucketColor } from "./charts";
 import { AmountInput, RateInput, SnapSlider, shortWon, won } from "./fields";
 import { BUCKET_ICONS, BUCKET_TEMPLATE, initialState, newId, type Bucket, type BucketIcon, type BucketItem, type BucketKind, type Flow, type Person } from "../lib/calc/plan";
@@ -43,6 +45,27 @@ export function BucketBoard({
   const updateBucket = (id: string, patch: Partial<Bucket>) => setBuckets(person.buckets.map((bucket) => (bucket.id === id ? { ...bucket, ...patch } : bucket)));
   const over = pf.allocatedPercent > 100.05;
   const advice = adviseBuckets(person.buckets, pf);
+  // 기준 계획(마지막 「다 바꿨어요」)과 비교한 바꿀 일
+  const confirmed = person.confirmed;
+  const groups = confirmed ? diffPlan(confirmed, pf) : [];
+  const pending = changeCount(groups);
+  const confirmNow = () => onPerson(who, { confirmed: snapshotPlan(pf, new Date().toISOString().slice(0, 10)) });
+  const revert = () => {
+    if (!confirmed) return;
+    setBuckets(confirmed.buckets.map((bucket) => ({
+      id: bucket.id,
+      name: bucket.name,
+      icon: BUCKET_ICONS.includes(bucket.icon as BucketIcon) ? (bucket.icon as BucketIcon) : "sparkles",
+      kind: bucket.kind,
+      percent: bucket.percent,
+      items: bucket.items.map((item) => ({ ...item })),
+    })));
+  };
+  // 합계 막대 위에 기준 때 경계(점선): 어느 바구니가 얼마나 움직였는지 한눈에
+  const barTotal = Math.max(100, pf.allocatedPercent);
+  const ghostMarks = confirmed && pending > 0 && pf.net > 0
+    ? pf.buckets.slice(0, -1).map((_, index) => pf.buckets.slice(0, index + 1).reduce((sum, bucket) => sum + ((confirmed.buckets.find((b) => b.id === bucket.id)?.budget ?? 0) / pf.net) * 100, 0))
+    : [];
 
   return (
     <div className="content">
@@ -55,7 +78,9 @@ export function BucketBoard({
       {/* 스크롤해도 위에 붙어 있는 전체 비율: 100%를 넘으면 넘은 만큼 빨갛게 */}
       <div className={`alloc-sticky ${over ? "over" : pf.allocatedPercent < 99.95 ? "under" : "done"}`} role="status" aria-live="polite">
         <div className="alloc-sticky-head">
-          <b>{names[who]} 합계 {Math.round(pf.allocatedPercent)}%</b>
+          <b>{names[who]} 합계 {Math.round(pf.allocatedPercent)}%
+            {pending > 0 && <button className="changes-chip" onClick={() => document.getElementById("changes")?.scrollIntoView({ behavior: "smooth", block: "center" })}>바꿀 일 {pending}</button>}
+          </b>
           <span>
             {over
               ? <><TriangleAlert size={14} /> {Math.round(pf.allocatedPercent - 100)}% 넘음 · {shortWon(pf.net * (pf.allocatedPercent - 100) / 100)}</>
@@ -70,6 +95,7 @@ export function BucketBoard({
           ))}
           {pf.allocatedPercent < 100 && <span className="rest" style={{ flexGrow: 100 - pf.allocatedPercent }} />}
           {over && <i className="over-zone" style={{ left: `${(100 / pf.allocatedPercent) * 100}%` }} />}
+          {ghostMarks.map((at, index) => <i key={index} className="ghost-mark" style={{ left: `${(at / barTotal) * 100}%` }} />)}
         </div>
         {/* 매니저 한마디: 지금 가장 중요한 한 가지 + 바로 맞추기 */}
         <p className={`manager-tip ${advice.tone}`}>
@@ -83,6 +109,8 @@ export function BucketBoard({
         <span className="hero-label">{names[who]} 월 실수령</span>
         <strong>{won(pf.net)}</strong>
       </section>
+
+      <ChangesCard confirmed={confirmed} groups={groups} onConfirm={confirmNow} onRevert={revert} />
 
       {pf.buckets.map((bucket, index) => {
         const Icon = BUCKET_ICON_MAP[bucket.icon];
