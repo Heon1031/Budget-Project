@@ -98,6 +98,8 @@ export type CommonAccount = { name: string; items: BucketItem[] };
 export const COMMON_TRANSFER = /공동\s*통장|모임\s*통장|모임/;
 // 집 · 공동 몫으로 볼 항목(공동 통장 + 집세 · 대출 이자 · 관리비).
 export const HOUSEHOLD_SHARE = /공동\s*통장|모임|전세|월세|관리비|주택\s*대출|대출\s*이자/;
+// 모임통장으로 보내도 개인 몫(점심 · 개인 식비)은 집 몫으로 세지 않는다.
+export const PERSONAL_IN_COMMON = /식비|점심|개인/;
 
 export const STORAGE_KEY = "duri-asset-plan-v4";
 export const RULES = {

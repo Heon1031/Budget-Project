@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowDownLeft, ArrowUpRight, Check, Home, Plus, Trash2, TriangleAlert, Users } from "lucide-react";
-import { COMMON_TRANSFER, HOUSEHOLD_SHARE, newId, type CommonAccount, type Person, type PersonFlow } from "../lib/calc/plan";
+import { COMMON_TRANSFER, HOUSEHOLD_SHARE, PERSONAL_IN_COMMON, newId, type CommonAccount, type Person, type PersonFlow } from "../lib/calc/plan";
 import { AmountInput, shortWon, won } from "./fields";
 
 // 나누기 「공동」: 토스 모임통장 같은 공동 통장 한 곳.
@@ -33,7 +33,7 @@ export function CommonBoard({
   const max = Math.max(totalIn, totalOut, 1);
 
   const share = people.map((person) =>
-    person.buckets.flatMap((bucket) => bucket.items).filter((item) => HOUSEHOLD_SHARE.test(item.name)),
+    person.buckets.flatMap((bucket) => bucket.items).filter((item) => HOUSEHOLD_SHARE.test(item.name) && !PERSONAL_IN_COMMON.test(item.name)),
   );
   const shareSum = share.map((items) => items.reduce((sum, item) => sum + item.amount, 0)) as [number, number];
   const shareTotal = shareSum[0] + shareSum[1];
@@ -115,7 +115,7 @@ export function CommonBoard({
       <section className="card bucket-card">
         <div className="common-head">
           <span className="bucket-icon" style={{ ["--bucket-color" as string]: "var(--good)" }}><Home size={18} /></span>
-          <span className="bucket-title"><b>집에 내는 몫</b><small>공동 통장 + 전세 · 월세 · 대출 이자 · 관리비</small></span>
+          <span className="bucket-title"><b>집에 내는 몫</b><small>공동 통장 + 전세 · 월세 · 대출 이자 · 관리비 (개인 식비는 빼고)</small></span>
         </div>
         <div className="share-bar" role="img" aria-label={names.map((name, index) => `${name} ${won(shareSum[index])}`).join(", ")}>
           <span className="who-1" style={{ flexGrow: shareSum[0] || 0.0001 }} />
