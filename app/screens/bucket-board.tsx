@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2, TriangleAlert, Check, Settings2, User } from "lucide-react";
+import { Plus, Trash2, TriangleAlert, Check, ChevronDown, Settings2, User } from "lucide-react";
 import { BUCKET_ICON_MAP, bucketColor } from "./charts";
 import { AmountInput, RateInput, SnapSlider, shortWon, won } from "./fields";
 import { BUCKET_ICONS, BUCKET_TEMPLATE, initialState, newId, type Bucket, type BucketIcon, type BucketItem, type BucketKind, type Flow, type Person } from "../lib/calc/plan";
@@ -33,6 +33,9 @@ export function BucketBoard({
 }) {
   const [who, setWho] = useState<0 | 1>(me);
   const [editing, setEditing] = useState<Bucket | null>(null);
+  // 항목 목록은 접어 두고, 누른 바구니만 연다. 비율만 만질 때는 카드가 짧아 스크롤이 적다.
+  const [openIds, setOpenIds] = useState<string[]>([]);
+  const toggleOpen = (id: string) => setOpenIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
   const person = people[who];
   const pf = flow.people[who];
   const setBuckets = (buckets: Bucket[]) => onPerson(who, { buckets });
@@ -47,19 +50,30 @@ export function BucketBoard({
         ))}
       </div>
 
-      <section className="summary-main">
-        <span className="hero-label">{names[who]} 월 실수령</span>
-        <strong>{won(pf.net)}</strong>
+      {/* 스크롤해도 위에 붙어 있는 전체 비율: 100%를 넘으면 넘은 만큼 빨갛게 */}
+      <div className={`alloc-sticky ${over ? "over" : pf.allocatedPercent < 99.95 ? "under" : "done"}`} role="status" aria-live="polite">
+        <div className="alloc-sticky-head">
+          <b>{names[who]} 합계 {Math.round(pf.allocatedPercent)}%</b>
+          <span>
+            {over
+              ? <><TriangleAlert size={14} /> {Math.round(pf.allocatedPercent - 100)}% 넘음 · {shortWon(pf.net * (pf.allocatedPercent - 100) / 100)}</>
+              : pf.allocatedPercent < 99.95
+                ? <>{Math.round(100 - pf.allocatedPercent)}% 남음 · {shortWon(pf.unallocated)}</>
+                : <><Check size={14} /> 딱 100%</>}
+          </span>
+        </div>
         <div className="alloc-bar" role="img" aria-label={pf.buckets.map((b) => `${b.name} ${b.percent}%`).join(", ")}>
           {pf.buckets.map((bucket, index) => (
             <span key={bucket.id} style={{ flexGrow: Math.max(0, bucket.percent), background: bucketColor(index) }} title={`${bucket.name} ${bucket.percent}%`} />
           ))}
           {pf.allocatedPercent < 100 && <span className="rest" style={{ flexGrow: 100 - pf.allocatedPercent }} />}
+          {over && <i className="over-zone" style={{ left: `${(100 / pf.allocatedPercent) * 100}%` }} />}
         </div>
-        <p className={`hero-note ${over ? "bad" : ""}`}>
-          {over ? <TriangleAlert size={14} /> : <Check size={14} />}
-          {over ? `${Math.round(pf.allocatedPercent)}% · 100%를 넘었어요` : pf.allocatedPercent < 99.95 ? `${Math.round(pf.allocatedPercent)}% 나눔 · 남은 ${shortWon(pf.unallocated)}` : "비율 100% 다 정했어요"}
-        </p>
+      </div>
+
+      <section className="summary-main">
+        <span className="hero-label">{names[who]} 월 실수령</span>
+        <strong>{won(pf.net)}</strong>
       </section>
 
       {pf.buckets.map((bucket, index) => {
@@ -76,6 +90,11 @@ export function BucketBoard({
               <button className="icon-close" aria-label={`${bucket.name} 바구니 고치기`} onClick={() => setEditing(person.buckets[index])}><Settings2 size={18} /></button>
             </div>
             <SnapSlider label={`${bucket.name} 비율`} value={bucket.percent} onChange={(percent) => updateBucket(bucket.id, { percent })} />
+            <button className="items-toggle" aria-expanded={openIds.includes(bucket.id)} onClick={() => toggleOpen(bucket.id)}>
+              <span>항목 {bucket.items.length}개 · {shortWon(bucket.planned)} 담음</span>
+              <ChevronDown size={18} />
+            </button>
+            {openIds.includes(bucket.id) && <div className="items-body">
             {(() => {
               // 지금 담은 돈이 실수령의 몇 %인지(막대 위), 목표 바구니 %(막대 아래 눈금)를 그래프에 바로 적는다.
               const nowPercent = pf.net > 0 ? (bucket.planned / pf.net) * 100 : 0;
@@ -129,6 +148,7 @@ export function BucketBoard({
               })}
             </ul>
             <button className="add-button" onClick={() => updateBucket(bucket.id, { items: [...bucket.items, { id: newId("i"), name: "", amount: 0 }] })}><Plus size={16} /> 항목</button>
+            </div>}
           </section>
         );
       })}
