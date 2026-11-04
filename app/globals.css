@@ -17,23 +17,23 @@
 
   --ink: #191f28;
   --ink-2: #4e5968;
-  --ink-3: #6b7684;
+  --ink-3: #5f6b78;
 
-  --brand: #2f6fed;
+  --brand: #2563e0;
   --brand-strong: #1b5bd6;
   --brand-weak: #e8f0fe;
   --on-brand: #ffffff;
   --partner: #7c5ce0;
   --partner-weak: #f1edfc;
 
-  --good: #0f8a5f;
+  --good: #0b7a54;
   --good-weak: #e6f6ef;
-  --warn: #a8590b;
+  --warn: #934d08;
   --warn-weak: #fff3e0;
-  --bad: #e0384a;
+  --bad: #c4283a;
   --bad-weak: #fdebed;
 
-  --hero-bg: #2f6fed;
+  --hero-bg: #2563e0;
   /* 그래프 3분류: 색약 검증 통과(dataviz validate_palette, 밝은 · 어두운 각각) */
   --chart-needs: #f0a03c;
   --chart-wants: #d4589a;
@@ -53,7 +53,7 @@
   --radius: 18px;
   --radius-s: 12px;
   --shadow: 0 1px 2px rgba(16, 24, 20, .04), 0 8px 24px rgba(16, 24, 20, .06);
-  --focus: 0 0 0 3px rgba(47, 111, 237, .25);
+  --focus: 0 0 0 3px rgba(37, 99, 224, .25);
   color-scheme: light;
 }
 
@@ -159,7 +159,7 @@ button.primary:disabled { background: var(--line-strong); color: var(--ink-3); c
 button.danger { margin-top: 18px; width: 100%; min-height: 48px; border: 1px solid color-mix(in srgb, var(--bad) 35%, transparent); border-radius: 14px; background: var(--surface); color: var(--bad); font-weight: 700; }
 .text-button { min-height: 44px; margin-top: 4px; border: 0; background: none; color: var(--brand); font-size: var(--fs-small); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; padding: 0; }
 .toggle-group { display: flex; padding: 4px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--line); flex: 0 0 auto; }
-.toggle-group button { min-height: 40px; border: 0; background: transparent; padding: 0 12px; border-radius: 9px; color: var(--ink-2); font-size: var(--fs-small); font-weight: 600; }
+.toggle-group button { min-height: 44px; border: 0; background: transparent; padding: 0 12px; border-radius: 9px; color: var(--ink-2); font-size: var(--fs-small); font-weight: 600; }
 .toggle-group button.active { background: var(--surface); color: var(--brand); font-weight: 700; box-shadow: 0 1px 3px rgba(0, 0, 0, .1); }
 .toggle-group.wide { display: grid; grid-template-columns: 1fr 1fr; margin-top: 12px; }
 
@@ -178,7 +178,7 @@ button.danger { margin-top: 18px; width: 100%; min-height: 48px; border: 1px sol
 .person-title { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .person-title > span { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; background: var(--brand); color: var(--on-brand); font-size: var(--fs-caption); font-weight: 800; }
 .person-2 .person-title > span { background: var(--partner); }
-.person-title input { width: 120px; min-height: 36px; border: 0; border-bottom: 1px dashed var(--line-strong); outline: 0; background: transparent; font-weight: 700; font-size: var(--fs-input); }
+.person-title input { width: 120px; min-height: 44px; border: 0; border-bottom: 1px dashed var(--line-strong); outline: 0; background: transparent; font-weight: 700; font-size: var(--fs-input); }
 .net-result { margin: 16px -18px 4px; padding: 14px 18px; display: grid; background: var(--brand-weak); }
 .person-2 .net-result { background: var(--partner-weak); }
 .net-result span { color: var(--ink-2); font-size: var(--fs-caption); }
@@ -434,7 +434,7 @@ footer p { margin: 0; }
 .sync-line { margin-top: 14px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px; border-radius: 14px; background: var(--good-weak); color: var(--good); font-size: var(--fs-small); font-weight: 600; }
 .sync-line.offline { background: var(--warn-weak); color: var(--warn); }
 .sync-line.denied { background: var(--bad-weak); color: var(--bad); }
-.sync-line button { flex: 0 0 auto; min-height: 36px; padding: 0 12px; border: 0; border-radius: 8px; background: var(--surface); color: var(--ink); font-size: var(--fs-caption); font-weight: 700; }
+.sync-line button { flex: 0 0 auto; min-height: 44px; padding: 0 12px; border: 0; border-radius: 8px; background: var(--surface); color: var(--ink); font-size: var(--fs-caption); font-weight: 700; }
 
 /* 아래 탭 */
 .tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: grid; grid-template-columns: repeat(5, 1fr); padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); background: color-mix(in srgb, var(--surface) 94%, transparent); backdrop-filter: blur(16px); border-top: 1px solid var(--line); }
@@ -450,7 +450,7 @@ footer p { margin: 0; }
   .save-dot::first-letter { font-size: var(--fs-small); }
   .marriage-note { align-items: flex-start; flex-direction: column; }
   .card .net-result { margin: 16px -16px 4px; padding: 14px 16px; }
-  .tabbar button { font-size: 11px; }
+  .tabbar button { font-size: var(--fs-caption); }
   .salary-grid, .housing-grid, .form-grid, .investment-details, .couple-totals { grid-template-columns: 1fr; }
   .projection-head { align-items: flex-start; flex-direction: column; }
   .projection-grid { grid-template-columns: 1fr 1fr; }
@@ -487,7 +487,7 @@ footer p { margin: 0; }
 .legend li { display: grid; grid-template-columns: 10px 1fr auto; align-items: center; gap: 6px; font-size: var(--fs-caption); color: var(--ink-2); }
 .legend li i { width: 10px; height: 10px; border-radius: 3px; }
 .legend li b { color: var(--ink); font-variant-numeric: tabular-nums; }
-.legend small { color: var(--ink-3); }
+.legend small { color: var(--ink-3); font-size: var(--fs-caption); }
 .badge { justify-content: flex-start; margin: 0; padding: 6px 10px; border-radius: 999px; font-size: var(--fs-caption); font-weight: 700; }
 .badge.good { background: var(--good-weak); color: var(--good); }
 .badge.warn { background: var(--warn-weak); color: var(--warn); }
@@ -616,12 +616,12 @@ main.gate .connect-card .start-option { text-align: left; }
 .bucket-left.bad { color: var(--bad); }
 .item-list { margin: 8px 0 0; padding: 0; list-style: none; }
 .item-list li { display: grid; grid-template-columns: minmax(0, 1fr) 120px 40px; align-items: center; gap: 6px; padding: 4px 0; border-top: 1px solid var(--line); }
-.item-name { min-width: 0; min-height: 40px; border: 0; outline: 0; background: transparent; font-size: var(--fs-input); }
+.item-name { min-width: 0; min-height: 44px; border: 0; outline: 0; background: transparent; font-size: var(--fs-input); }
 .item-name:focus, .item-amount:focus-within { box-shadow: var(--focus); border-radius: 8px; }
 .item-amount { display: flex; align-items: center; justify-content: flex-end; }
 .item-amount input { width: 100%; min-width: 0; min-height: 40px; border: 0; outline: 0; background: transparent; text-align: right; font-size: var(--fs-input); font-weight: 700; font-variant-numeric: tabular-nums; }
 .item-amount b { margin-left: 2px; color: var(--ink-3); font-size: var(--fs-caption); }
-.icon-ghost { width: 40px; height: 40px; display: grid; place-items: center; border: 0; border-radius: 10px; background: transparent; color: var(--ink-3); }
+.icon-ghost { width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: 10px; background: transparent; color: var(--ink-3); }
 .bucket-tools { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 button.person-donut { border: 0; color: inherit; font: inherit; cursor: pointer; }
 
@@ -642,11 +642,33 @@ button.person-donut { border: 0; color: inherit; font: inherit; cursor: pointer;
 .money-field { padding: 0 6px 0 12px; }
 .amount-input { display: flex; align-items: center; flex: 1; min-width: 0; gap: 6px; }
 .amount-input input { width: 100%; min-width: 0; min-height: 44px; border: 0; outline: 0; background: transparent; padding: 0; text-align: right; font-size: var(--fs-input); font-weight: 700; font-variant-numeric: tabular-nums; }
-.unit-button { flex: 0 0 auto; min-width: 44px; min-height: 36px; padding: 0 8px; border: 0; border-radius: 9px; background: var(--brand-weak); color: var(--brand); font-size: var(--fs-small); font-weight: 700; white-space: nowrap; }
+.unit-button { flex: 0 0 auto; min-width: 44px; min-height: 44px; padding: 0 8px; border: 0; border-radius: 9px; background: var(--brand-weak); color: var(--brand); font-size: var(--fs-small); font-weight: 700; white-space: nowrap; }
 .money-read { display: block; margin-top: 4px; color: var(--ink-3); font-size: var(--fs-caption); font-style: normal; text-align: right; }
 .is-example input, .is-example .item-name, input.is-example, .is-example > b { color: var(--ink-3); font-weight: 500; }
 .example-banner { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-radius: 16px; background: var(--warn-weak); color: var(--warn); font-size: var(--fs-small); font-weight: 600; }
-.item-amount .amount-input input { min-height: 40px; }
-.item-amount .unit-button { min-width: 36px; min-height: 32px; padding: 0 6px; font-size: var(--fs-caption); }
+.item-amount .amount-input input { min-height: 44px; }
+.item-amount .unit-button { min-width: 40px; min-height: 44px; padding: 0 4px; background: transparent; color: var(--ink-3); font-size: var(--fs-small); font-weight: 600; }
+.item-amount .unit-button:active { background: var(--surface-2); }
 .wish-list li.is-example .wish-head b, .wish-list li.is-example .wish-head small { color: var(--ink-3); font-weight: 500; }
 button.example-banner { width: 100%; border: 0; text-align: left; cursor: pointer; }
+
+/* 애플 + 토스 다듬기 (2026-11-04 점검 뒤)
+   - 누르면 살짝 눌리는 느낌, 탭을 바꾸면 부드럽게 올라옴, 시트는 아래에서 올라옴
+   - 움직임 줄이기 설정이면 모두 끈다 */
+.brand { min-height: 44px; }
+button { -webkit-tap-highlight-color: transparent; transition: transform .12s ease, background-color .15s ease, color .15s ease; }
+button:active:not(:disabled) { transform: scale(.97); }
+.tabbar button:active, .item-amount .unit-button:active { transform: none; }
+.layout > * { animation: rise .24s cubic-bezier(.2, .8, .2, 1) both; }
+.sheet-backdrop { animation: fade .2s ease both; }
+.sheet { animation: sheet-up .28s cubic-bezier(.2, .8, .2, 1) both; }
+.sheet::before { content: ""; display: block; width: 36px; height: 5px; margin: -12px auto 14px; border-radius: 999px; background: var(--line-strong); }
+.example-banner { width: 100%; border: 0; text-align: left; background: var(--brand-weak); color: var(--ink); }
+.example-banner svg { color: var(--brand); flex: 0 0 auto; }
+.card { box-shadow: var(--shadow); }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sheet-up { from { transform: translateY(100%); } to { transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

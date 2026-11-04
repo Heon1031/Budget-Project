@@ -54,7 +54,7 @@ export function BucketBoard({
         </div>
         <p className={`hero-note ${over ? "bad" : ""}`}>
           {over ? <TriangleAlert size={14} /> : <Check size={14} />}
-          {over ? `${Math.round(pf.allocatedPercent)}% · 100%를 넘었어요` : pf.allocatedPercent < 99.95 ? `${Math.round(pf.allocatedPercent)}% 나눔 · 남은 ${shortWon(pf.unallocated)}` : "100% 다 나눴어요"}
+          {over ? `${Math.round(pf.allocatedPercent)}% · 100%를 넘었어요` : pf.allocatedPercent < 99.95 ? `${Math.round(pf.allocatedPercent)}% 나눔 · 남은 ${shortWon(pf.unallocated)}` : "비율 100% 다 정했어요"}
         </p>
       </section>
 
@@ -84,10 +84,10 @@ export function BucketBoard({
                     <i style={{ left: `${goalAt}%` }} />
                   </div>
                   <p className="goal-text">
-                    <span>지금 <b>{nowPercent.toFixed(1)}%</b> · 목표 {bucket.percent}%</span>
+                    <span>담은 돈 <b>{Math.round(nowPercent)}%</b> / 목표 {bucket.percent}%</span>
                     <b className={short ? "warn" : bucket.left < 0 && bucket.kind !== "save" ? "bad" : "good"}>
                       {bucket.kind === "save"
-                        ? short ? `+${shortWon(bucket.left)} 더 넣으면 ${bucket.percent}%` : "목표 달성"
+                        ? short ? `+${shortWon(bucket.left)} 더 담으면 채워요` : "목표 달성"
                         : bucket.left < 0 ? `${shortWon(-bucket.left)} 넘침` : bucket.kind === "free" ? `쓸 돈 ${shortWon(bucket.left)}` : `남음 ${shortWon(bucket.left)}`}
                     </b>
                   </p>
