@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Users } from "lucide-react";
+import { FileUp, Users } from "lucide-react";
 import { MoneyField, won } from "./fields";
-import { initialState, type AppState, type Person, type calculateSalary } from "../lib/calc/plan";
+import { initialState, restoreState, type AppState, type Person, type calculateSalary } from "../lib/calc/plan";
 
 // 설정: 두 사람의 월급(실수령 추정) · 매달 저축 · 투자, 공동 몫 나누는 방식, 모은 자산.
 
@@ -23,6 +23,24 @@ export function SettingsBoard({
   children?: React.ReactNode;
 }) {
   const [openBreakdown, setOpenBreakdown] = useState<0 | 1 | null>(null);
+  const [importNote, setImportNote] = useState<string | null>(null);
+
+  // 계획 파일 불러오기: 폰 안에서만 읽는다(서버로 바로 보내지 않음). 바꾼 계획은 평소처럼 암호화돼 상대 폰과 맞춰진다.
+  // 파일에 있는 칸만 바꾸고, 없는 칸(예: 아내 연봉)은 지금 값을 그대로 둔다.
+  const importPlan = async (file: File) => {
+    try {
+      if (file.size > 200_000) throw new Error("파일이 너무 커요");
+      const data = JSON.parse(await file.text()) as { duriPlan?: unknown; people?: unknown };
+      if (data.duriPlan !== 1 || !Array.isArray(data.people) || data.people.length !== 2) throw new Error("둘이자산 계획 파일이 아니에요");
+      const incoming = data.people as Partial<Person>[];
+      if (!confirm("남편 · 아내의 월급과 바구니를 이 파일 내용으로 바꿀까요? 연결돼 있으면 상대 폰에도 바뀌어요.")) return;
+      const people = restoreState({ people: state.people.map((current, index) => ({ ...current, ...incoming[index] })) }).people;
+      onState({ people });
+      setImportNote(`불러왔어요 · ${people.map((person) => `${person.name} 바구니 ${person.buckets.length}개`).join(" · ")}`);
+    } catch (error) {
+      setImportNote(`불러오지 못했어요: ${error instanceof Error ? error.message : "알 수 없는 오류"}`);
+    }
+  };
 
   return (
     <div className="content">
@@ -63,6 +81,24 @@ export function SettingsBoard({
         <h3 className="card-title"><Users size={18} /> 둘이 함께</h3>
         <MoneyField label="지금까지 모은 자산" example={state.plan.currentAssets === initialState.plan.currentAssets} value={state.plan.currentAssets} onChange={(currentAssets) => onState({ plan: { ...state.plan, currentAssets } })} />
         <p className="muted small">저축 · 투자 · 생활비 같은 매달 돈은 「나누기」 탭의 바구니에 담아요.</p>
+      </section>
+
+      <section className="card import-card">
+        <h3 className="card-title"><FileUp size={18} /> 계획 파일 불러오기</h3>
+        <p className="muted small">메모에서 옮긴 계획 파일(.json)로 월급 · 바구니 · 항목을 한 번에 채워요. 파일은 이 폰 안에서만 읽어요.</p>
+        <label className="add-button import-button">
+          <FileUp size={16} /> 파일 고르기
+          <input
+            type="file"
+            accept="application/json,.json"
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              event.target.value = "";
+              if (file) void importPlan(file);
+            }}
+          />
+        </label>
+        {importNote && <p className="muted small" role="status">{importNote}</p>}
       </section>
 
       {children}

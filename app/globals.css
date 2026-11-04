@@ -830,3 +830,8 @@ li.is-example .icon-ghost { opacity: .6; }
 .manager-actions button { flex: 1; min-height: 44px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: var(--btn-r-s); background: var(--surface); color: var(--ink); font-size: var(--fs-small); font-weight: 700; white-space: nowrap; }
 .manager-actions button.first { border-color: transparent; background: var(--brand); color: var(--on-brand); }
 .alloc-sticky.over .manager-actions button.first { background: var(--bad); }
+
+/* 계획 파일 불러오기 */
+.import-button { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; position: relative; }
+.import-button input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.import-button:focus-within { box-shadow: var(--focus); }
