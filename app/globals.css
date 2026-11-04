@@ -739,3 +739,19 @@ li.is-example .icon-ghost { opacity: .6; }
 .goal-tag.goal { bottom: 0; color: var(--ink-3); font-weight: 600; }
 .goal-graph .goal-bar i { top: -5px; bottom: -5px; }
 .goal-text { margin-top: 2px; justify-content: flex-end; }
+
+/* 비율 밀대: 바구니 색으로 채운 트랙 + 흰 동그란 손잡이(애플 느낌), 25% 눈금 */
+.snap-slider { position: relative; display: block; margin: 14px 0 2px; height: 32px; }
+.snap-slider input { position: absolute; inset: 0; width: 100%; height: 32px; margin: 0; background: transparent; -webkit-appearance: none; appearance: none; touch-action: pan-y; cursor: pointer; z-index: 1; }
+.snap-slider input::-webkit-slider-runnable-track { height: 6px; border-radius: 999px; background: linear-gradient(to right, var(--bucket-color, var(--brand)) var(--fill), var(--surface-2) var(--fill)); }
+.snap-slider input::-moz-range-track { height: 6px; border-radius: 999px; background: var(--surface-2); }
+.snap-slider input::-moz-range-progress { height: 6px; border-radius: 999px; background: var(--bucket-color, var(--brand)); }
+.snap-slider input::-webkit-slider-thumb { -webkit-appearance: none; width: 28px; height: 28px; margin-top: -11px; border-radius: 50%; background: #ffffff; border: 0; box-shadow: 0 1px 2px rgba(0, 0, 0, .15), 0 4px 12px rgba(0, 0, 0, .12); transition: transform .12s ease; }
+.snap-slider input::-moz-range-thumb { width: 28px; height: 28px; border-radius: 50%; background: #ffffff; border: 0; box-shadow: 0 1px 2px rgba(0, 0, 0, .15), 0 4px 12px rgba(0, 0, 0, .12); }
+.snap-slider input:active::-webkit-slider-thumb { transform: scale(1.1); }
+.snap-slider input:focus-visible { box-shadow: none; }
+.snap-slider input:focus-visible::-webkit-slider-thumb { box-shadow: var(--focus), 0 4px 12px rgba(0, 0, 0, .12); }
+.snap-ticks { position: absolute; left: 14px; right: 14px; top: 50%; height: 0; pointer-events: none; }
+.snap-ticks i { position: absolute; top: 7px; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: var(--line-strong); transition: background-color .12s ease, transform .12s ease; }
+.snap-ticks i.on { background: var(--bucket-color, var(--brand)); transform: scale(1.5); }
+.bucket-percent { border-radius: var(--btn-r-s); }

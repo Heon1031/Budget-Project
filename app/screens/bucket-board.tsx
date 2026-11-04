@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Plus, Trash2, TriangleAlert, Check, Settings2, User } from "lucide-react";
 import { BUCKET_ICON_MAP, bucketColor } from "./charts";
-import { AmountInput, RateInput, shortWon, won } from "./fields";
+import { AmountInput, RateInput, SnapSlider, shortWon, won } from "./fields";
 import { BUCKET_ICONS, BUCKET_TEMPLATE, initialState, newId, type Bucket, type BucketIcon, type BucketItem, type BucketKind, type Flow, type Person } from "../lib/calc/plan";
 
 // 처음 들어 있던 예시 항목을 그대로 두었는지(이름 · 금액이 예시와 같음).
@@ -75,6 +75,7 @@ export function BucketBoard({
               <label className="bucket-percent"><RateInput value={bucket.percent} onChange={(percent) => updateBucket(bucket.id, { percent: Math.min(100, percent) })} /><b>%</b></label>
               <button className="icon-close" aria-label={`${bucket.name} 바구니 고치기`} onClick={() => setEditing(person.buckets[index])}><Settings2 size={18} /></button>
             </div>
+            <SnapSlider label={`${bucket.name} 비율`} value={bucket.percent} onChange={(percent) => updateBucket(bucket.id, { percent })} />
             {(() => {
               // 지금 담은 돈이 실수령의 몇 %인지(막대 위), 목표 바구니 %(막대 아래 눈금)를 그래프에 바로 적는다.
               const nowPercent = pf.net > 0 ? (bucket.planned / pf.net) * 100 : 0;

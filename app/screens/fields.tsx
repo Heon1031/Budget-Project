@@ -171,3 +171,42 @@ export function shortWon(value: number) {
   if (abs >= 10_000) return `${sign}${Math.round(abs / 10_000).toLocaleString("ko-KR")}만`;
   return `${sign}${Math.round(abs).toLocaleString("ko-KR")}원`;
 }
+
+// 비율 밀대: 손가락으로 끌면 5% 단위 근처(±1.5%)에서 자석처럼 딱 붙는다.
+// 붙는 순간 안드로이드는 짧게 떨림(아이폰 사파리는 떨림을 지원하지 않아 눈금 색만 바뀐다).
+const SNAP_EVERY = 5;
+const SNAP_PULL = 1.5;
+export function snapPercent(raw: number) {
+  const near = Math.round(raw / SNAP_EVERY) * SNAP_EVERY;
+  return Math.abs(raw - near) <= SNAP_PULL ? near : Math.round(raw);
+}
+
+export function SnapSlider({ value, onChange, label, max = 100 }: { value: number; onChange: (value: number) => void; label: string; max?: number }) {
+  const last = useRef(value);
+  const shown = Math.min(max, Math.max(0, value));
+  return (
+    <span className="snap-slider" style={{ ["--fill" as string]: `${(shown / max) * 100}%` }}>
+      <input
+        type="range"
+        min={0}
+        max={max}
+        step={0.5}
+        value={shown}
+        aria-label={label}
+        aria-valuetext={`${Math.round(shown)}%`}
+        onChange={(event) => {
+          const next = Math.min(max, snapPercent(Number(event.target.value)));
+          if (next === last.current) return;
+          if (next % SNAP_EVERY === 0 && typeof navigator !== "undefined") navigator.vibrate?.(6);
+          last.current = next;
+          onChange(next);
+        }}
+      />
+      <span className="snap-ticks" aria-hidden="true">
+        {[0, 25, 50, 75, 100].map((tick) => (
+          <i key={tick} className={Math.round(shown) === tick ? "on" : ""} style={{ left: `${tick}%` }} />
+        ))}
+      </span>
+    </span>
+  );
+}
