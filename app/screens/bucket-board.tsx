@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2, TriangleAlert, Check, ChevronDown, Settings2, User } from "lucide-react";
+import { Plus, Trash2, TriangleAlert, Check, ChevronDown, Settings2, Sparkles, User } from "lucide-react";
+import { adviseBuckets } from "../lib/calc/advice";
 import { BUCKET_ICON_MAP, bucketColor } from "./charts";
 import { AmountInput, RateInput, SnapSlider, shortWon, won } from "./fields";
 import { BUCKET_ICONS, BUCKET_TEMPLATE, initialState, newId, type Bucket, type BucketIcon, type BucketItem, type BucketKind, type Flow, type Person } from "../lib/calc/plan";
@@ -41,6 +42,7 @@ export function BucketBoard({
   const setBuckets = (buckets: Bucket[]) => onPerson(who, { buckets });
   const updateBucket = (id: string, patch: Partial<Bucket>) => setBuckets(person.buckets.map((bucket) => (bucket.id === id ? { ...bucket, ...patch } : bucket)));
   const over = pf.allocatedPercent > 100.05;
+  const advice = adviseBuckets(person.buckets, pf);
 
   return (
     <div className="content">
@@ -69,6 +71,12 @@ export function BucketBoard({
           {pf.allocatedPercent < 100 && <span className="rest" style={{ flexGrow: 100 - pf.allocatedPercent }} />}
           {over && <i className="over-zone" style={{ left: `${(100 / pf.allocatedPercent) * 100}%` }} />}
         </div>
+        {/* 매니저 한마디: 지금 가장 중요한 한 가지 + 바로 맞추기 */}
+        <p className={`manager-tip ${advice.tone}`}>
+          <Sparkles size={14} />
+          <span>{advice.text}</span>
+          {advice.action && <button onClick={() => setBuckets(advice.action!.buckets)}>{advice.action.label}</button>}
+        </p>
       </div>
 
       <section className="summary-main">

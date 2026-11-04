@@ -773,3 +773,12 @@ li.is-example .icon-ghost { opacity: .6; }
 .items-toggle[aria-expanded="true"] svg { transform: rotate(180deg); }
 .items-toggle:active { transform: none; }
 .items-body { animation: rise .2s ease both; }
+
+/* 매니저 한마디 (나누기 고정 줄 안) */
+.manager-tip { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; align-items: center; gap: 8px; margin: 10px 0 0; padding: 8px 8px 8px 12px; border-radius: var(--radius-s); background: var(--surface-2); color: var(--ink); font-size: var(--fs-small); font-weight: 600; line-height: 1.45; }
+.manager-tip > svg { color: var(--brand); }
+.manager-tip.good > svg { color: var(--good); }
+.manager-tip.warn { background: var(--surface); }
+.manager-tip.warn > svg { color: var(--bad); }
+.manager-tip button { min-height: 44px; padding: 0 12px; border: 0; border-radius: 10px; background: var(--brand); color: var(--on-brand); font-size: var(--fs-small); font-weight: 700; white-space: nowrap; }
+.manager-tip.warn button { background: var(--bad); color: #ffffff; }
