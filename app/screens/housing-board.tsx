@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { Banknote, CalendarDays, Check, CircleHelp, House, Landmark, Newspaper, Percent, SlidersHorizontal, TriangleAlert } from "lucide-react";
 import { Ring } from "./charts";
 import { MoneyField, RateInput, koreanWon, shortWon } from "./fields";
-import { HOUSE_STEPS, RULES, calculateHouse, initialHouse, stepDate, type HousePlan } from "./lib/housing";
-import type { MarketInfo } from "./lib/market";
+import { HOUSE_STEPS, RULES, calculateHouse, initialHouse, stepDate, type HousePlan } from "../lib/calc/housing";
+import type { MarketInfo } from "../lib/server/market";
 
 // 1년 안 내 집 마련: 필요한 현금, 대출 가능액(추정), 모자란 돈, 매달 더 모을 돈, 잔금일 기준 할 일.
 

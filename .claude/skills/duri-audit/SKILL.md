@@ -9,7 +9,7 @@ description: 둘이자산(Budget-Project) 점검 방에서 UI·UX·GUI·접근�
 2. 볼 것
    - **GUI:** 글꼴(Pretendard) · 색 토큰 · 간격 · 모서리 · 아이콘 일관성, 애플 + 토스 느낌(여백, 큰 숫자, 카드, 부드러운 움직임).
    - **UX:** 처음 쓰는 사람이 3번 안에 원하는 숫자에 닿는가, 문구가 한 줄로 끝나는가, 되돌리기 · 확인이 있는가.
-   - **UI 규칙:** 글자 12px 이상, 누르는 곳 44px 이상, 가로 넘침 0, 카드당 주 버튼 1개(`docs/design.md`).
+   - **UI 규칙:** 글자 12px 이상, 누르는 곳 44px 이상, 가로 넘침 0, 카드당 주 버튼 1개(`docs/frontend/design.md`).
    - **접근성:** 대비, 색만으로 뜻을 전하지 않는지, 스크린리더 이름(aria-label), 키보드 이동. `design:accessibility-review` 스킬을 참고.
 3. 보고서: `docs/audit/YYYY-MM-DD.md`. 문제마다 「어디 · 무엇이 · 왜 문제 · 고칠 방 · 우선순위(높음/보통/낮음)」. 숫자(px, 대비 값)와 스크린샷 위치를 적는다.
-4. 고칠 일은 `docs/handoff/<방>.md`에 옮겨 적는다. 직접 고치지 않는다.
+4. 고칠 일은 그 영역의 `docs/<frontend|backend|calc>/todo.md`에 옮겨 적는다. 직접 고치지 않는다.

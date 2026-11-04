@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Check, Clock, ListPlus, Repeat, Sparkles, TriangleAlert, Trash2, User, Users, Zap, type LucideIcon } from "lucide-react";
 import { Bar } from "./charts";
 import { MoneyField, shortWon } from "./fields";
-import { initialState, newId, type Flow, type Owner, type Wish } from "./lib/plan";
+import { initialState, newId, type Flow, type Owner, type Wish } from "../lib/calc/plan";
 
 // 해볼까?: 하고 싶은 것을 지금 해도 되는지 한 줄로, 쓸 돈 대비 얼마인지 막대로 보여 준다.
 

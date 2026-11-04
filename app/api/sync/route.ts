@@ -5,7 +5,7 @@ import {
   pushRecords,
   readCredentials,
   type PushRecord,
-} from "../../lib/server-store";
+} from "../../lib/server/server-store";
 
 const noStore = { "cache-control": "no-store" };
 

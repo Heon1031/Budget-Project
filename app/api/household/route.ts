@@ -1,4 +1,4 @@
-import { createHousehold, errorResponse } from "../../lib/server-store";
+import { createHousehold, errorResponse } from "../../lib/server/server-store";
 
 export async function POST(request: Request) {
   try {

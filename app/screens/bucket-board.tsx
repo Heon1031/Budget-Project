@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Plus, Trash2, TriangleAlert, Check, Settings2, User } from "lucide-react";
 import { BUCKET_ICON_MAP, bucketColor } from "./charts";
 import { AmountInput, RateInput, shortWon, won } from "./fields";
-import { BUCKET_ICONS, BUCKET_TEMPLATE, initialState, newId, type Bucket, type BucketIcon, type BucketItem, type BucketKind, type Flow, type Person } from "./lib/plan";
+import { BUCKET_ICONS, BUCKET_TEMPLATE, initialState, newId, type Bucket, type BucketIcon, type BucketItem, type BucketKind, type Flow, type Person } from "../lib/calc/plan";
 
 // 처음 들어 있던 예시 항목을 그대로 두었는지(이름 · 금액이 예시와 같음).
 const isExampleItem = (who: 0 | 1, bucketId: string, item: BucketItem) =>

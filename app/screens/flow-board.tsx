@@ -3,7 +3,7 @@
 import { CalendarDays, Check, ChevronRight, House, Info, PiggyBank, TriangleAlert, Wallet } from "lucide-react";
 import { Donut, GrowthBars, Legend, Ring, bucketColor, type Segment } from "./charts";
 import { koreanWon, shortWon } from "./fields";
-import type { Flow } from "./lib/plan";
+import type { Flow } from "../lib/calc/plan";
 
 // 첫 화면: 1년 뒤 모일 돈(막대), 각자 월급이 바구니로 어떻게 나뉘는지(도넛, 가운데 = 마음 편히 쓸 돈), 내 집까지(고리).
 

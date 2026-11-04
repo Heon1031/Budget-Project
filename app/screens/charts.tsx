@@ -22,7 +22,7 @@ import {
   Tv,
   type LucideIcon,
 } from "lucide-react";
-import type { BucketIcon, FixedCategory } from "./lib/plan";
+import type { BucketIcon, FixedCategory } from "../lib/calc/plan";
 import { won } from "./fields";
 
 // 그래프 부품. 색은 globals.css의 --chart-* 토큰(색약 검증 통과)만 쓴다.

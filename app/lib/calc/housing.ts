@@ -1,4 +1,4 @@
-// 집 마련 계산(추정). 규제 숫자는 여기 RULES에만 두고 출처·기준일은 docs/housing.md에 적는다.
+// 집 마련 계산(추정). 규제 숫자는 여기 RULES에만 두고 출처·기준일은 docs/calc/housing.md에 적는다.
 
 export const RULES = {
   checkedOn: "2026-11-03",

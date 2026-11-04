@@ -21,8 +21,8 @@ const rules = [
     test: (text) => /importKey\([^;]*?,\s*true\s*,\s*\[/s.test(text),
   },
   {
-    why: "서버(app/api, server-store)에서 console.log로 요청 내용을 남기면 안 된다.",
-    only: /app[\/](api|lib[\/]server-store)/,
+    why: "서버(app/api, app/lib/server)에서 console.log로 요청 내용을 남기면 안 된다.",
+    only: /app[\/](api|lib[\/]server)[\/]/,
     test: (text) => /console\.log\(/.test(text),
   },
   {

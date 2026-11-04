@@ -6,13 +6,13 @@ description: 둘이자산(Budget-Project) 계산 방에서 실수령액·바구�
 # 둘이자산 돈 계산 규칙
 
 ## 숫자
-- 흐름 계산(바구니 금액 · 마음 편히 쓸 돈 · 1년 모일 돈)은 `app/lib/plan.ts`의 `computeFlow`, 해볼까 판정은 `app/wish-board.tsx`의 `judgeWish` 한곳에서만 한다.
+- 흐름 계산(바구니 금액 · 마음 편히 쓸 돈 · 1년 모일 돈)은 `app/lib/calc/plan.ts`의 `computeFlow`, 해볼까 판정은 `app/screens/wish-board.tsx`의 `judgeWish` 한곳에서만 한다.
 - 두 사람의 실제 돈 숫자는 공개 저장소에 쓰지 않는다(예시값만). 실제 기록은 `../가계부_개인기록/`.
-- 세금 · 4대보험은 `app/lib/plan.ts`의 `RULES`, 집 마련 규제는 `app/lib/housing.ts`의 `RULES`에만 둔다.
-- 바꾸면 `docs/housing.md` 표(값 · 근거 · 날짜)를 같이 고친다. 블로그 출처만 있으면 「확인 필요」를 남긴다.
+- 세금 · 4대보험은 `app/lib/calc/plan.ts`의 `RULES`, 집 마련 규제는 `app/lib/calc/housing.ts`의 `RULES`에만 둔다.
+- 바꾸면 `docs/calc/housing.md` 표(값 · 근거 · 날짜)를 같이 고친다. 블로그 출처만 있으면 「확인 필요」를 남긴다.
 - 대출 한도 = min(LTV × 집값, 집값 구간별 상한, DSR로 역산한 원금). DSR 역산은 (연 소득 × DSR − 기존 연 상환액)을 스트레스 금리 포함 원리금균등 상환으로 나눠 원금을 구한다.
 - 화면에 나오는 한도 · 세금은 모두 「추정」. 은행 심사 · 공식 자료를 대체하지 않는다고 적는다.
 - 집 목돈은 원금 보장 상품을 기본으로 안내한다. 투자 권유 문구를 쓰지 않는다.
 
 ## 보안
-- 암호화 · 동기화 · 서버는 서버 · 보안 방 몫이다(`duri-backend` 스킬).
+- 암호화 · 동기화 · 서버는 서버 · 보안 영역이다(`docs/backend/`, `duri-backend` 스킬).

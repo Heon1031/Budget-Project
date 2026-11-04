@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Users } from "lucide-react";
 import { MoneyField, won } from "./fields";
-import { initialState, type AppState, type Person, type calculateSalary } from "./lib/plan";
+import { initialState, type AppState, type Person, type calculateSalary } from "../lib/calc/plan";
 
 // 설정: 두 사람의 월급(실수령 추정) · 매달 저축 · 투자, 공동 몫 나누는 방식, 모은 자산.
 

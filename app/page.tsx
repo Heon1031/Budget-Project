@@ -2,13 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { House, PieChart, Settings, Sparkles, Waves, type LucideIcon } from "lucide-react";
-import { ConnectPanel } from "./connect-panel";
-import { LockScreen, LockSettings } from "./lock-screen";
-import { clearLock, readLock } from "./lib/lock";
-import { BucketBoard } from "./bucket-board";
-import { FlowBoard } from "./flow-board";
-import { HousingBoard } from "./housing-board";
-import { calculateHouse, daysUntil, defaultMoveDate } from "./lib/housing";
+import { ConnectPanel } from "./secure/connect-panel";
+import { LockScreen, LockSettings } from "./secure/lock-screen";
+import { clearLock, readLock } from "./lib/secure/lock";
+import { BucketBoard } from "./screens/bucket-board";
+import { FlowBoard } from "./screens/flow-board";
+import { HousingBoard } from "./screens/housing-board";
+import { calculateHouse, daysUntil, defaultMoveDate } from "./lib/calc/housing";
 import {
   STORAGE_KEY,
   calculateSalary,
@@ -19,11 +19,11 @@ import {
   type AppState,
   type Person,
   type Wish,
-} from "./lib/plan";
-import { forgetCache, useSharedRecords } from "./lib/sync";
-import { clearVault, loadVault, type Vault } from "./lib/vault";
-import { SettingsBoard } from "./settings-board";
-import { WishBoard } from "./wish-board";
+} from "./lib/calc/plan";
+import { forgetCache, useSharedRecords } from "./lib/secure/sync";
+import { clearVault, loadVault, type Vault } from "./lib/secure/vault";
+import { SettingsBoard } from "./screens/settings-board";
+import { WishBoard } from "./screens/wish-board";
 
 type Tab = "flow" | "buckets" | "wish" | "house" | "settings";
 

@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { ClipboardPaste, Copy, Link2, QrCode, ScanLine, ShieldCheck, TriangleAlert } from "lucide-react";
 import { QrImage, QrScanner } from "./qr";
-import { checkVault, registerHousehold, type SyncStatus } from "./lib/sync";
-import { decodePairing, encodePairing, newVault, saveVault, vaultFromSecret, type Vault } from "./lib/vault";
+import { checkVault, registerHousehold, type SyncStatus } from "../lib/secure/sync";
+import { decodePairing, encodePairing, newVault, saveVault, vaultFromSecret, type Vault } from "../lib/secure/vault";
 
 // 두 폰 연결. 둘 중 아무 폰에서 「새로 시작하기」를 누르면 바로 QR이 뜨고, 다른 폰이 그 QR을 찍으면 끝.
 // 누가 주인인 구조가 아니다. 연결된 폰은 둘 다 언제든 QR을 보여 줄 수 있다.

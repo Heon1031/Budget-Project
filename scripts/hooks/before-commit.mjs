@@ -8,7 +8,7 @@ const command = String(input.tool_input?.command ?? "");
 if (!/\bgit\b[^|;&]*\bcommit\b/.test(command)) process.exit(0);
 
 const cwd = fileURLToPath(new URL("../..", import.meta.url));
-for (const step of ["node scripts/check-security.mjs", "npx eslint . --ignore-pattern dist", "npm test"]) {
+for (const step of ["node scripts/check-security.mjs", "npx eslint . --ignore-pattern dist --ignore-pattern .claude", "npm test"]) {
   try {
     execSync(step, { cwd, stdio: "pipe", encoding: "utf8" });
   } catch (error) {

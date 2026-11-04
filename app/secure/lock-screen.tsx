@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Lock, ScanFace } from "lucide-react";
-import { canUseBiometric, clearLock, enableLock, readLock, unlockWithBiometric } from "./lib/lock";
+import { canUseBiometric, clearLock, enableLock, readLock, unlockWithBiometric } from "../lib/secure/lock";
 
 // 잠금 화면: Face ID · 지문으로 연다. 생체 인식이 안 되면 폰이 알아서 폰 잠금 비밀번호(PIN)를 묻는다.
 
