@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { PiggyBank, Target, Users } from "lucide-react";
-import { MoneyField, RateInput, won } from "./fields";
-import { RATIO_PRESETS, type AppState, type Person, type calculateSalary } from "./lib/plan";
+import { Users } from "lucide-react";
+import { MoneyField, won } from "./fields";
+import type { AppState, Person, calculateSalary } from "./lib/plan";
 
 // 설정: 두 사람의 월급(실수령 추정) · 매달 저축 · 투자, 공동 몫 나누는 방식, 모은 자산.
 
@@ -55,33 +55,6 @@ export function SettingsBoard({
                 <p><span>지방소득세(추정)</span><b>-{won(calc.localIncomeTax)}</b></p>
               </div>
             )}
-            <h4 className="sub-title"><PiggyBank size={16} /> 먼저 떼는 돈</h4>
-            <div className="form-grid">
-              <MoneyField label="예금·적금" value={person.monthlyDeposit} onChange={(monthlyDeposit) => onPerson(i, { monthlyDeposit })} />
-              <MoneyField label="비상금" value={person.monthlyEmergency} onChange={(monthlyEmergency) => onPerson(i, { monthlyEmergency })} />
-              <MoneyField label="주식·펀드" value={person.monthlyInvest} onChange={(monthlyInvest) => onPerson(i, { monthlyInvest })} />
-              <MoneyField label="연금·IRP" value={person.monthlyPension} onChange={(monthlyPension) => onPerson(i, { monthlyPension })} />
-            </div>
-            <h4 className="sub-title"><Target size={16} /> 나누기 목표</h4>
-            <div className="chip-row">
-              {RATIO_PRESETS.map((preset) => {
-                const active = person.targetNeeds === preset.needs && person.targetWants === preset.wants && person.targetSavings === preset.savings;
-                return (
-                  <button key={preset.id} className={active ? "active" : ""} onClick={() => onPerson(i, { targetNeeds: preset.needs, targetWants: preset.wants, targetSavings: preset.savings })}>
-                    {preset.label} {preset.needs}·{preset.wants}·{preset.savings}
-                  </button>
-                );
-              })}
-            </div>
-            <div className="rate-grid ratio-grid">
-              <label><span><i className="dot needs" />필요</span><div><RateInput value={person.targetNeeds} onChange={(targetNeeds) => onPerson(i, { targetNeeds: Math.min(100, targetNeeds) })} /><b>%</b></div></label>
-              <label><span><i className="dot wants" />하고 싶은</span><div><RateInput value={person.targetWants} onChange={(targetWants) => onPerson(i, { targetWants: Math.min(100, targetWants) })} /><b>%</b></div></label>
-              <label><span><i className="dot savings" />모으기</span><div><RateInput value={person.targetSavings} onChange={(targetSavings) => onPerson(i, { targetSavings: Math.min(100, targetSavings) })} /><b>%</b></div></label>
-            </div>
-            {Math.round(person.targetNeeds + person.targetWants + person.targetSavings) !== 100 && (
-              <p className="verdict talk">세 칸을 더하면 {Math.round(person.targetNeeds + person.targetWants + person.targetSavings)}%예요. 100%가 되게 맞춰 주세요.</p>
-            )}
-
           </section>
         );
       })}
@@ -89,14 +62,7 @@ export function SettingsBoard({
       <section className="card">
         <h3 className="card-title"><Users size={18} /> 둘이 함께</h3>
         <MoneyField label="지금까지 모은 자산" value={state.plan.currentAssets} onChange={(currentAssets) => onState({ plan: { ...state.plan, currentAssets } })} />
-        <MoneyField label="매달 청약 저축" value={state.plan.housingSubscription} onChange={(housingSubscription) => onState({ plan: { ...state.plan, housingSubscription } })} />
-        <div className="field">
-          <span>공동 몫 나누기</span>
-          <div className="toggle-group wide" style={{ marginTop: 0 }}>
-            <button className={state.shareRule === "income" ? "active" : ""} onClick={() => onState({ shareRule: "income" })}>월급 비율</button>
-            <button className={state.shareRule === "half" ? "active" : ""} onClick={() => onState({ shareRule: "half" })}>반씩</button>
-          </div>
-        </div>
+        <p className="muted small">저축 · 투자 · 생활비 같은 매달 돈은 「나누기」 탭의 바구니에 담아요.</p>
       </section>
 
       {children}

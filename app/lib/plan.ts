@@ -10,6 +10,7 @@ export type Person = {
   monthlyInvest: number;
   monthlyPension: number;
   monthlyEmergency: number;
+  buckets: Bucket[];
   // 각자 정한 목표 비율(실수령 기준, 합 100): 꼭 필요한 돈 · 하고 싶은 돈 · 모으는 돈
   targetNeeds: number;
   targetWants: number;
@@ -53,6 +54,29 @@ export type FixedCost = { id: string; name: string; amount: number; owner: Owner
 // 해 보고 싶은 것. once는 한 번 드는 돈(피부과, 헬스 등록), monthly는 매달 드는 돈(레슨).
 export type Wish = { id: string; name: string; amount: number; kind: "once" | "monthly"; owner: Owner };
 
+// 바구니: 각자 실수령을 %로 나눠 담는 칸. save = 모으는 돈(1년 모일 돈에 들어감), spend = 쓰는 돈, free = 마음 편히 쓰는 돈(용돈).
+export type BucketKind = "save" | "spend" | "free";
+export const BUCKET_ICONS = ["piggy", "cart", "heart", "wallet", "plane", "shield", "users", "home", "sparkles"] as const;
+export type BucketIcon = (typeof BUCKET_ICONS)[number];
+export type BucketItem = { id: string; name: string; amount: number };
+export type Bucket = { id: string; name: string; icon: BucketIcon; kind: BucketKind; percent: number; items: BucketItem[] };
+
+// 기본 바구니 틀(두 사람이 실제로 쓰는 방식: 저축·투자 40 · 생활비 35 · 자기관리 15 · 용돈 7 · 여행 3 · 예비 0).
+export const BUCKET_TEMPLATE: Omit<Bucket, "items">[] = [
+  { id: "b-save", name: "저축·투자", icon: "piggy", kind: "save", percent: 40 },
+  { id: "b-living", name: "생활비", icon: "cart", kind: "spend", percent: 35 },
+  { id: "b-self", name: "자기관리", icon: "heart", kind: "spend", percent: 15 },
+  { id: "b-free", name: "용돈", icon: "wallet", kind: "free", percent: 7 },
+  { id: "b-trip", name: "여행", icon: "plane", kind: "spend", percent: 3 },
+  { id: "b-spare", name: "예비", icon: "shield", kind: "spend", percent: 0 },
+];
+
+const exampleBuckets = (items: Record<string, [string, number][]>): Bucket[] =>
+  BUCKET_TEMPLATE.map((bucket) => ({
+    ...bucket,
+    items: (items[bucket.id] ?? []).map(([name, amount], index) => ({ id: `${bucket.id}-${index}`, name, amount })),
+  }));
+
 export type AppState = {
   people: [Person, Person];
   plan: Plan;
@@ -86,6 +110,12 @@ export const initialState: AppState = {
       monthlyInvest: 400_000,
       monthlyPension: 150_000,
       monthlyEmergency: 100_000,
+      buckets: exampleBuckets({
+        "b-save": [["적금", 600_000], ["주식", 400_000], ["연금", 200_000], ["비상금", 100_000]],
+        "b-living": [["공동 통장", 400_000], ["식비", 300_000], ["교통·통신", 150_000]],
+        "b-self": [["운동", 100_000], ["보험", 80_000]],
+        "b-trip": [["여행 적금", 100_000]],
+      }),
       foodRate: 15,
       cultureRate: 5,
       travelRate: 5,
@@ -103,6 +133,12 @@ export const initialState: AppState = {
       monthlyInvest: 300_000,
       monthlyPension: 120_000,
       monthlyEmergency: 80_000,
+      buckets: exampleBuckets({
+        "b-save": [["적금", 500_000], ["주식", 300_000], ["청약", 100_000]],
+        "b-living": [["공동 통장", 400_000], ["식비", 250_000], ["교통·통신", 120_000]],
+        "b-self": [["요가", 120_000], ["보험", 90_000]],
+        "b-trip": [["여행 적금", 80_000]],
+      }),
       foodRate: 15,
       cultureRate: 5,
       travelRate: 5,
@@ -164,10 +200,12 @@ export function restoreState(saved: unknown): AppState {
   const data = saved && typeof saved === "object" ? (saved as Partial<AppState>) : {};
   const people = Array.isArray(data.people) ? data.people : [];
   return {
-    people: [
-      renameDefault(mergeDefaults(initialState.people[0], people[0]), "나", "남편"),
-      renameDefault(mergeDefaults(initialState.people[1], people[1]), "배우자", "아내"),
-    ],
+    people: [0, 1].map((index) => {
+      const person = renameDefault(mergeDefaults(initialState.people[index], people[index]), index === 0 ? "나" : "배우자", index === 0 ? "남편" : "아내");
+      const raw = (people[index] as Partial<Person> | undefined)?.buckets;
+      const fixedCosts = Array.isArray(data.fixedCosts) ? data.fixedCosts.flatMap(cleanFixed) : [];
+      return { ...person, buckets: Array.isArray(raw) ? raw.flatMap(cleanBucket) : migrateBuckets(person, index as 0 | 1, fixedCosts) };
+    }) as [Person, Person],
     plan: mergeDefaults(initialState.plan, data.plan),
     house: mergeDefaults(initialHouse, data.house),
     marriageRegistered:
@@ -221,66 +259,88 @@ function migrateFixed(planSource: unknown): FixedCost[] {
     .map(([name, key, category]) => ({ id: `f-${key}`, name, amount: plan[key], owner: "both" as const, category, day: 25 }));
 }
 
+function cleanBucket(item: unknown): Bucket[] {
+  const raw = (item ?? {}) as Partial<Bucket>;
+  if (typeof raw.id !== "string" || typeof raw.name !== "string") return [];
+  const percent = typeof raw.percent === "number" && Number.isFinite(raw.percent) ? Math.min(100, Math.max(0, raw.percent)) : 0;
+  const items = Array.isArray(raw.items)
+    ? raw.items.flatMap((entry) => {
+        const it = (entry ?? {}) as Partial<BucketItem>;
+        return typeof it.id === "string" && typeof it.name === "string" ? [{ id: it.id, name: it.name.slice(0, 40), amount: money(it.amount) }] : [];
+      })
+    : [];
+  return [{
+    id: raw.id,
+    name: raw.name.slice(0, 20),
+    icon: BUCKET_ICONS.includes(raw.icon as BucketIcon) ? (raw.icon as BucketIcon) : "sparkles",
+    kind: raw.kind === "save" || raw.kind === "free" ? raw.kind : "spend",
+    percent,
+    items,
+  }];
+}
+
+// 바구니가 생기기 전 계획: 저축 칸 · 각자 고정지출을 기본 바구니에 옮겨 담는다(공동 고정지출은 사람마다 내는 몫이 달라 옮기지 않음).
+function migrateBuckets(person: Person, index: 0 | 1, fixedCosts: FixedCost[]): Bucket[] {
+  const saves: [string, number][] = [
+    ["예금·적금", person.monthlyDeposit],
+    ["비상금", person.monthlyEmergency],
+    ["주식·펀드", person.monthlyInvest],
+    ["연금·IRP", person.monthlyPension],
+  ];
+  const target: Record<FixedCategory, string> = {
+    주거: "b-living", 생활: "b-living", 통신: "b-living", 교통: "b-living", 대출: "b-living",
+    보험: "b-self", "학원·배움": "b-self", "운동·건강": "b-self",
+    취미: "b-free", 구독: "b-free", 기타: "b-free",
+  };
+  return BUCKET_TEMPLATE.map((bucket) => ({
+    ...bucket,
+    items: [
+      ...(bucket.id === "b-save" ? saves.filter(([, amount]) => amount > 0).map(([name, amount], i) => ({ id: `${bucket.id}-m${i}`, name, amount })) : []),
+      ...fixedCosts.filter((item) => item.owner === index && target[item.category] === bucket.id).map((item) => ({ id: item.id, name: item.name, amount: item.amount })),
+    ],
+  }));
+}
+
 export const newId = (prefix: string) =>
   `${prefix}-${Array.from(crypto.getRandomValues(new Uint8Array(6)), (byte) => byte.toString(36).padStart(2, "0")).join("")}`;
 
+export type BucketFlow = Bucket & { budget: number; planned: number; left: number };
+
 export type PersonFlow = {
   net: number;
-  ownFixed: number;
-  jointShare: number;
-  saving: number;
-  investing: number;
+  buckets: BucketFlow[];
+  allocatedPercent: number;
+  // 바구니에 나누지 않은 돈(음수면 100%를 넘게 나눈 것)
+  unallocated: number;
+  // 마음 편히 쓸 돈 = 용돈 바구니에서 정해 둔 항목을 뺀 돈 + 나누지 않은 돈
   free: number;
-  // 실수령을 셋으로 나눈 실제 금액(원). 공동 몫도 월급 비율대로 나눠 담는다.
-  needs: number;
-  wants: number;
-  savings: number;
+  saveMonthly: number;
 };
 
 export type Flow = {
   people: [PersonFlow, PersonFlow];
-  shares: [number, number];
-  jointFixed: number;
-  houseMonthly: number;
-  subscription: number;
   monthlySaved: number;
   yearSaved: number;
   totalNet: number;
 };
 
-// 월급 − 내 고정지출 − 공동 몫(공동 고정지출 + 집 목돈 + 청약) − 내 저축·투자 = 마음 편히 쓸 돈
 export function computeFlow(state: AppState, nets: [number, number]): Flow {
-  const totalNet = nets[0] + nets[1];
-  const shares: [number, number] = state.shareRule === "half" || totalNet <= 0 ? [0.5, 0.5] : [nets[0] / totalNet, nets[1] / totalNet];
-  const sumFor = (owner: Owner, needs?: boolean) =>
-    state.fixedCosts
-      .filter((item) => item.owner === owner && (needs === undefined || NEED_CATEGORIES.includes(item.category) === needs))
-      .reduce((sum, item) => sum + item.amount, 0);
-  const jointFixed = sumFor("both");
-  const houseMonthly = state.house.monthlySaving;
-  const subscription = state.plan.housingSubscription;
-  const joint = jointFixed + houseMonthly + subscription;
   const people = state.people.map((person, index) => {
-    const saving = person.monthlyDeposit + person.monthlyEmergency;
-    const investing = person.monthlyInvest + person.monthlyPension;
-    const ownFixed = sumFor(index as 0 | 1);
-    const jointShare = joint * shares[index];
-    const free = nets[index] - ownFixed - jointShare - saving - investing;
-    const share = shares[index];
-    return {
-      net: nets[index],
-      ownFixed,
-      jointShare,
-      saving,
-      investing,
-      free,
-      needs: sumFor(index as 0 | 1, true) + share * sumFor("both", true),
-      wants: sumFor(index as 0 | 1, false) + share * sumFor("both", false) + free,
-      savings: saving + investing + share * (houseMonthly + subscription),
-    };
+    const net = nets[index];
+    const buckets = person.buckets.map((bucket) => {
+      const budget = Math.round((net * bucket.percent) / 100);
+      const planned = bucket.items.reduce((sum, item) => sum + item.amount, 0);
+      return { ...bucket, budget, planned, left: budget - planned };
+    });
+    const allocatedPercent = person.buckets.reduce((sum, bucket) => sum + bucket.percent, 0);
+    const unallocated = net - buckets.reduce((sum, bucket) => sum + bucket.budget, 0);
+    const freeLeft = buckets.filter((bucket) => bucket.kind === "free").reduce((sum, bucket) => sum + bucket.left, 0);
+    // 모으는 돈은 실제로 정해 둔 항목을 쓰고, 항목이 없으면 바구니 금액을 쓴다.
+    const saveMonthly = buckets.filter((bucket) => bucket.kind === "save").reduce((sum, bucket) => sum + (bucket.planned > 0 ? bucket.planned : bucket.budget), 0);
+    return { net, buckets, allocatedPercent, unallocated, free: freeLeft + Math.max(0, unallocated), saveMonthly };
   }) as [PersonFlow, PersonFlow];
-  const monthlySaved = people[0].saving + people[0].investing + people[1].saving + people[1].investing + houseMonthly + subscription;
-  return { people, shares, jointFixed, houseMonthly, subscription, monthlySaved, yearSaved: monthlySaved * 12, totalNet };
+  const monthlySaved = people[0].saveMonthly + people[1].saveMonthly;
+  return { people, monthlySaved, yearSaved: monthlySaved * 12, totalNet: nets[0] + nets[1] };
 }
 
 const round10 = (value: number) => Math.floor(value / 10) * 10;

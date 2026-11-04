@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { House, ListChecks, Settings, Sparkles, Waves, type LucideIcon } from "lucide-react";
+import { House, PieChart, Settings, Sparkles, Waves, type LucideIcon } from "lucide-react";
 import { ConnectPanel } from "./connect-panel";
 import { LockScreen, LockSettings } from "./lock-screen";
 import { clearLock, readLock } from "./lib/lock";
-import { FixedBoard } from "./fixed-board";
+import { BucketBoard } from "./bucket-board";
 import { FlowBoard } from "./flow-board";
 import { HousingBoard } from "./housing-board";
 import { calculateHouse, daysUntil, defaultMoveDate } from "./lib/housing";
@@ -15,23 +15,41 @@ import {
   computeFlow,
   initialState,
   restoreState,
+  newId,
   type AppState,
   type Person,
+  type Wish,
 } from "./lib/plan";
 import { forgetCache, useSharedRecords } from "./lib/sync";
 import { clearVault, loadVault, type Vault } from "./lib/vault";
 import { SettingsBoard } from "./settings-board";
 import { WishBoard } from "./wish-board";
 
-type Tab = "flow" | "fixed" | "wish" | "house" | "settings";
+type Tab = "flow" | "buckets" | "wish" | "house" | "settings";
 
 const TABS: { id: Tab; icon: LucideIcon; label: string }[] = [
   { id: "flow", icon: Waves, label: "흐름" },
-  { id: "fixed", icon: ListChecks, label: "고정지출" },
+  { id: "buckets", icon: PieChart, label: "나누기" },
   { id: "wish", icon: Sparkles, label: "해볼까" },
   { id: "house", icon: House, label: "내 집" },
   { id: "settings", icon: Settings, label: "설정" },
 ];
+
+// 매달 하는 「해볼까」를 시작하면: 그 사람 「자기관리」 바구니(없으면 첫 쓰기 바구니)에 항목으로 담는다. 둘이 하는 건 반씩.
+function startMonthlyWish(state: AppState, wish: Wish): AppState {
+  const owners: (0 | 1)[] = wish.owner === "both" ? [0, 1] : [wish.owner];
+  const amount = wish.owner === "both" ? Math.round(wish.amount / 2) : wish.amount;
+  const people = state.people.map((person, index) => {
+    if (!owners.includes(index as 0 | 1)) return person;
+    const target = person.buckets.find((bucket) => bucket.id === "b-self") ?? person.buckets.find((bucket) => bucket.kind !== "save");
+    if (!target) return person;
+    return {
+      ...person,
+      buckets: person.buckets.map((bucket) => (bucket.id === target.id ? { ...bucket, items: [...bucket.items, { id: newId("i"), name: wish.name, amount }] } : bucket)),
+    };
+  }) as [Person, Person];
+  return { ...state, people, wishes: state.wishes.filter((item) => item.id !== wish.id) };
+}
 
 export default function Home() {
   const [state, setState] = useState<AppState>(initialState);
@@ -172,25 +190,18 @@ export default function Home() {
           <FlowBoard
             flow={flow}
             names={names}
-            targets={[state.people[0], state.people[1]]}
             house={{ daysLeft: daysUntil(moveDate), have: houseCalc.willHave, need: houseCalc.needCash }}
             onOpen={setTab}
           />
         )}
-        {tab === "fixed" && <FixedBoard items={state.fixedCosts} names={names} onChange={(fixedCosts) => update({ fixedCosts })} />}
+        {tab === "buckets" && <BucketBoard people={state.people} flow={flow} names={names} me={vault?.me ?? 0} onPerson={updatePerson} />}
         {tab === "wish" && (
           <WishBoard
             wishes={state.wishes}
             flow={flow}
             names={names}
             onChange={(wishes) => update({ wishes })}
-            onMoveToFixed={(fixed, wishId) =>
-              setState((current) => ({
-                ...current,
-                fixedCosts: [...current.fixedCosts, fixed],
-                wishes: current.wishes.filter((wish) => wish.id !== wishId),
-              }))
-            }
+            onStartMonthly={(wish) => setState((current) => startMonthlyWish(current, wish))}
           />
         )}
         {tab === "house" && (

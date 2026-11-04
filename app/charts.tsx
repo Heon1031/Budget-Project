@@ -3,6 +3,13 @@
 import { useState } from "react";
 import {
   Bus,
+  HeartPulse,
+  PiggyBank,
+  Plane,
+  ShieldCheck,
+  Sparkles,
+  Users,
+  Wallet,
   Dumbbell,
   GraduationCap,
   House,
@@ -15,7 +22,7 @@ import {
   Tv,
   type LucideIcon,
 } from "lucide-react";
-import type { FixedCategory } from "./lib/plan";
+import type { BucketIcon, FixedCategory } from "./lib/plan";
 import { won } from "./fields";
 
 // 그래프 부품. 색은 globals.css의 --chart-* 토큰(색약 검증 통과)만 쓴다.
@@ -33,6 +40,21 @@ export const CATEGORY_ICONS: Record<FixedCategory, LucideIcon> = {
   구독: Tv,
   기타: Package,
 };
+
+export const BUCKET_ICON_MAP: Record<BucketIcon, LucideIcon> = {
+  piggy: PiggyBank,
+  cart: ShoppingCart,
+  heart: HeartPulse,
+  wallet: Wallet,
+  plane: Plane,
+  shield: ShieldCheck,
+  users: Users,
+  home: House,
+  sparkles: Sparkles,
+};
+
+// 바구니 색: 순서(자리)에 따라 고정. dataviz 기준 팔레트 8색(색약 검증 통과, 밝은 · 어두운 각각).
+export const bucketColor = (index: number) => `var(--bucket-${(index % 8) + 1})`;
 
 export type Segment = { label: string; value: number; color: string };
 

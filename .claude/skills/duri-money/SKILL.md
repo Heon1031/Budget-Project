@@ -6,7 +6,8 @@ description: 둘이자산(Budget-Project)의 돈 계산(실수령액·약속·�
 # 둘이자산 돈 · 보안 규칙
 
 ## 숫자
-- 흐름 계산은 `app/lib/plan.ts`의 `computeFlow`, 해볼까 판정은 `app/wish-board.tsx`의 `judgeWish` 한곳에서만 한다.
+- 흐름 계산(바구니 금액 · 마음 편히 쓸 돈 · 1년 모일 돈)은 `app/lib/plan.ts`의 `computeFlow`, 해볼까 판정은 `app/wish-board.tsx`의 `judgeWish` 한곳에서만 한다.
+- 두 사람의 실제 돈 숫자는 공개 저장소에 쓰지 않는다(예시값만). 실제 기록은 `../가계부_개인기록/`.
 - 세금 · 4대보험은 `app/lib/plan.ts`의 `RULES`, 집 마련 규제는 `app/lib/housing.ts`의 `RULES`에만 둔다.
 - 바꾸면 `docs/housing.md` 표(값 · 근거 · 날짜)를 같이 고친다. 블로그 출처만 있으면 「확인 필요」를 남긴다.
 - 대출 한도 = min(LTV × 집값, 집값 구간별 상한, DSR로 역산한 원금). DSR 역산은 (연 소득 × DSR − 기존 연 상환액)을 스트레스 금리 포함 원리금균등 상환으로 나눠 원금을 구한다.
