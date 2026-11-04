@@ -67,10 +67,29 @@ export function BucketBoard({
               <label className="bucket-percent"><RateInput value={bucket.percent} onChange={(percent) => updateBucket(bucket.id, { percent: Math.min(100, percent) })} /><b>%</b></label>
               <button className="icon-close" aria-label={`${bucket.name} 바구니 고치기`} onClick={() => setEditing(person.buckets[index])}><Settings2 size={18} /></button>
             </div>
-            <i className={`hbar ${bucket.left < 0 ? "bad" : ""}`} aria-hidden="true"><span style={{ width: `${bucket.budget > 0 ? Math.min(100, (bucket.planned / bucket.budget) * 100) : bucket.planned > 0 ? 100 : 0}%`, background: bucket.left < 0 ? undefined : "var(--bucket-color)" }} /></i>
-            <p className={`bucket-left ${bucket.left < 0 ? "bad" : ""}`}>
-              {bucket.items.length === 0 ? (bucket.kind === "free" ? `마음 편히 쓸 돈 ${won(bucket.budget)}` : "항목 없음") : bucket.left < 0 ? `${won(-bucket.left)} 넘침` : `정한 것 ${shortWon(bucket.planned)} · 남음 ${shortWon(bucket.left)}`}
-            </p>
+            {(() => {
+              // 지금 담은 돈이 실수령의 몇 %인지, 목표(바구니 %)까지 얼마 남았는지. 막대 끝 눈금이 목표.
+              const nowPercent = pf.net > 0 ? (bucket.planned / pf.net) * 100 : 0;
+              const scale = Math.max(bucket.percent, nowPercent, 1);
+              const goalAt = (bucket.percent / scale) * 100;
+              const short = bucket.kind === "save" && bucket.left > 0;
+              return (
+                <>
+                  <div className="goal-bar" aria-hidden="true">
+                    <span className={bucket.left < 0 && bucket.kind !== "save" ? "over" : ""} style={{ width: `${(nowPercent / scale) * 100}%` }} />
+                    <i style={{ left: `${goalAt}%` }} />
+                  </div>
+                  <p className="goal-text">
+                    <span>지금 <b>{nowPercent.toFixed(1)}%</b> · 목표 {bucket.percent}%</span>
+                    <b className={short ? "warn" : bucket.left < 0 && bucket.kind !== "save" ? "bad" : "good"}>
+                      {bucket.kind === "save"
+                        ? short ? `+${shortWon(bucket.left)} 더 넣으면 ${bucket.percent}%` : "목표 달성"
+                        : bucket.left < 0 ? `${shortWon(-bucket.left)} 넘침` : bucket.kind === "free" ? `쓸 돈 ${shortWon(bucket.left)}` : `남음 ${shortWon(bucket.left)}`}
+                    </b>
+                  </p>
+                </>
+              );
+            })()}
             <ul className="item-list">
               {bucket.items.map((item) => (
                 <li key={item.id}>

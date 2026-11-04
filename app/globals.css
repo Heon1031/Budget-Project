@@ -624,3 +624,15 @@ main.gate .connect-card .start-option { text-align: left; }
 .icon-ghost { width: 40px; height: 40px; display: grid; place-items: center; border: 0; border-radius: 10px; background: transparent; color: var(--ink-3); }
 .bucket-tools { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 button.person-donut { border: 0; color: inherit; font: inherit; cursor: pointer; }
+
+/* 지금 % · 목표 % 막대 (나누기) */
+.goal-bar { position: relative; height: 10px; margin-top: 12px; border-radius: 999px; background: var(--surface-2); }
+.goal-bar span { display: block; height: 100%; max-width: 100%; border-radius: 999px; background: var(--bucket-color); }
+.goal-bar span.over { background: var(--bad); }
+.goal-bar i { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; border-radius: 2px; background: var(--ink); }
+.goal-text { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin: 8px 0 0; color: var(--ink-3); font-size: var(--fs-caption); }
+.goal-text span b { color: var(--ink); }
+.goal-text > b { font-size: var(--fs-small); }
+.goal-text > b.good { color: var(--good); }
+.goal-text > b.warn { color: var(--warn); }
+.goal-text > b.bad { color: var(--bad); }
