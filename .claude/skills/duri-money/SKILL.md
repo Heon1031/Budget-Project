@@ -1,9 +1,9 @@
 ---
 name: duri-money
-description: 둘이자산(Budget-Project)의 돈 계산(실수령액·약속·집 마련·대출 한도·취득세)이나 규제 숫자, 암호화·동기화 코드를 고칠 때 읽는다. 숫자 출처 규칙과 보안 규칙.
+description: 둘이자산(Budget-Project) 계산 방에서 실수령액·바구니 계산·해볼까 판정·집 마련(대출 한도·취득세)·규제 숫자를 고칠 때 읽는다. 숫자 출처 규칙.
 ---
 
-# 둘이자산 돈 · 보안 규칙
+# 둘이자산 돈 계산 규칙
 
 ## 숫자
 - 흐름 계산(바구니 금액 · 마음 편히 쓸 돈 · 1년 모일 돈)은 `app/lib/plan.ts`의 `computeFlow`, 해볼까 판정은 `app/wish-board.tsx`의 `judgeWish` 한곳에서만 한다.
@@ -15,7 +15,4 @@ description: 둘이자산(Budget-Project)의 돈 계산(실수령액·약속·�
 - 집 목돈은 원금 보장 상품을 기본으로 안내한다. 투자 권유 문구를 쓰지 않는다.
 
 ## 보안
-- 서버로 보내는 모든 기록은 `encryptJson`을 거친다. 서버 코드는 내용을 해석하지 않는다.
-- 열쇠 `extractable: false`. 비밀번호 · 확인값을 localStorage · URL · 로그에 두지 않는다.
-- 새 API를 만들면 `authenticate`를 먼저 부르고, 응답에 `cache-control: no-store`.
-- 고친 뒤 `npm run check:security`. 기록 모양을 바꾸면 예전 기록을 풀었을 때 깨지지 않게 기본값을 채운다.
+- 암호화 · 동기화 · 서버는 서버 · 보안 방 몫이다(`duri-backend` 스킬).

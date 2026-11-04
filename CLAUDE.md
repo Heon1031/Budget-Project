@@ -1,3 +1,4 @@
 @AGENTS.md
 
-- 화면 · 문구를 고칠 때는 `duri-design` 스킬, 돈 계산 · 규제 숫자를 고칠 때는 `duri-money` 스킬을 먼저 읽는다.
+- 방이 나뉘어 있다: `docs/rooms.md`를 먼저 보고 자기 방의 맡은 파일만 고친다.
+- 화면은 `duri-design`, 서버 · 보안은 `duri-backend`, 돈 계산은 `duri-money`, 점검은 `duri-audit` 스킬을 먼저 읽는다.
