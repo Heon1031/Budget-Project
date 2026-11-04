@@ -42,9 +42,14 @@ export function BucketBoard({
   const person = people[who];
   const pf = flow.people[who];
   const setBuckets = (buckets: Bucket[]) => onPerson(who, { buckets });
-  const updateBucket = (id: string, patch: Partial<Bucket>) => setBuckets(person.buckets.map((bucket) => (bucket.id === id ? { ...bucket, ...patch } : bucket)));
+  // 방금 비율을 만진 바구니: 매니저가 거기서 다시 빼라고 하지 않게 넘겨준다.
+  const [touched, setTouched] = useState<{ who: 0 | 1; id: string } | null>(null);
+  const updateBucket = (id: string, patch: Partial<Bucket>) => {
+    if ("percent" in patch) setTouched({ who, id });
+    setBuckets(person.buckets.map((bucket) => (bucket.id === id ? { ...bucket, ...patch } : bucket)));
+  };
   const over = pf.allocatedPercent > 100.05;
-  const advice = adviseBuckets(person.buckets, pf);
+  const advice = adviseBuckets(person.buckets, pf, touched?.who === who ? touched.id : undefined);
   // 기준 계획(마지막 「다 바꿨어요」)과 비교한 바꿀 일
   const confirmed = person.confirmed;
   const groups = confirmed ? diffPlan(confirmed, pf) : [];
@@ -101,8 +106,14 @@ export function BucketBoard({
         <p className={`manager-tip ${advice.tone}`}>
           <Sparkles size={14} />
           <span>{advice.text}</span>
-          {advice.action && <button onClick={() => setBuckets(advice.action!.buckets)}>{advice.action.label}</button>}
         </p>
+        {advice.actions.length > 0 && (
+          <div className="manager-actions">
+            {advice.actions.map((action, index) => (
+              <button key={action.label} className={index === 0 ? "first" : ""} onClick={() => setBuckets(action.buckets)}>{action.label}</button>
+            ))}
+          </div>
+        )}
       </div>
 
       <section className="summary-main">

@@ -823,3 +823,10 @@ li.is-example .icon-ghost { opacity: .6; }
 .changes-revert { display: inline-flex; align-items: center; justify-content: center; gap: 4px; margin: -6px 0 0; color: var(--ink-2); text-decoration: none; }
 .changes-none { display: flex; align-items: center; gap: 6px; margin: 0; padding: 0 4px; color: var(--ink-3); font-size: var(--fs-small); }
 .segmented button { min-height: 44px; }
+
+/* 매니저 버튼: 한마디 아래 한 줄에 1~2개. 첫 번째가 추천(채움), 두 번째는 테두리 */
+.manager-tip { grid-template-columns: 16px minmax(0, 1fr); }
+.manager-actions { display: flex; gap: 8px; margin-top: 8px; }
+.manager-actions button { flex: 1; min-height: 44px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: var(--btn-r-s); background: var(--surface); color: var(--ink); font-size: var(--fs-small); font-weight: 700; white-space: nowrap; }
+.manager-actions button.first { border-color: transparent; background: var(--brand); color: var(--on-brand); }
+.alloc-sticky.over .manager-actions button.first { background: var(--bad); }
