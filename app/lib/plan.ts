@@ -61,10 +61,10 @@ export type BucketIcon = (typeof BUCKET_ICONS)[number];
 export type BucketItem = { id: string; name: string; amount: number };
 export type Bucket = { id: string; name: string; icon: BucketIcon; kind: BucketKind; percent: number; items: BucketItem[] };
 
-// 기본 바구니 틀(두 사람이 실제로 쓰는 방식: 저축·투자 40 · 생활비 35 · 자기관리 15 · 용돈 7 · 여행 3 · 예비 0).
+// 기본 바구니 틀: 저축·투자 50(맞벌이 신혼 「저축 50% 이상」 조언) · 생활비 25 · 자기관리 15 · 용돈 7 · 여행 3 · 예비 0.
 export const BUCKET_TEMPLATE: Omit<Bucket, "items">[] = [
-  { id: "b-save", name: "저축·투자", icon: "piggy", kind: "save", percent: 40 },
-  { id: "b-living", name: "생활비", icon: "cart", kind: "spend", percent: 35 },
+  { id: "b-save", name: "저축·투자", icon: "piggy", kind: "save", percent: 50 },
+  { id: "b-living", name: "생활비", icon: "cart", kind: "spend", percent: 25 },
   { id: "b-self", name: "자기관리", icon: "heart", kind: "spend", percent: 15 },
   { id: "b-free", name: "용돈", icon: "wallet", kind: "free", percent: 7 },
   { id: "b-trip", name: "여행", icon: "plane", kind: "spend", percent: 3 },
@@ -135,7 +135,7 @@ export const initialState: AppState = {
       monthlyEmergency: 80_000,
       buckets: exampleBuckets({
         "b-save": [["적금", 500_000], ["주식", 300_000], ["청약", 100_000]],
-        "b-living": [["공동 통장", 400_000], ["식비", 250_000], ["교통·통신", 120_000]],
+        "b-living": [["공동 통장", 400_000], ["식비", 200_000], ["교통·통신", 100_000]],
         "b-self": [["요가", 120_000], ["보험", 90_000]],
         "b-trip": [["여행 적금", 80_000]],
       }),

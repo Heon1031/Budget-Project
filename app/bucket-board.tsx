@@ -103,7 +103,7 @@ export function BucketBoard({
       <div className="bucket-tools">
         <button className="add-button" onClick={() => setBuckets([...person.buckets, { id: newId("b"), name: "새 바구니", icon: "sparkles", kind: "spend", percent: 0, items: [] }])}><Plus size={16} /> 바구니 추가</button>
         <button className="text-button" onClick={() => {
-          if (confirm(`${names[who]}의 바구니 비율을 40·35·15·7·3으로 맞출까요? 항목은 그대로 둬요.`)) {
+          if (confirm(`${names[who]}의 바구니 비율을 50·25·15·7·3으로 맞출까요? 항목은 그대로 둬요.`)) {
             setBuckets(person.buckets.map((bucket) => {
               const template = BUCKET_TEMPLATE.find((t) => t.id === bucket.id);
               return template ? { ...bucket, percent: template.percent } : bucket;
