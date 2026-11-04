@@ -53,12 +53,15 @@ function startMonthlyWish(state: AppState, wish: Wish): AppState {
 }
 
 // 연봉이나 바구니 항목이 아직 처음 예시 그대로인지(첫 화면 안내용).
-function isStillExample(state: AppState) {
-  return state.people.some((person, index) => {
-    const sample = initialState.people[index];
-    const sameItems = person.buckets.some((bucket) => bucket.items.some((item) => sample.buckets.some((b) => b.items.some((it) => it.id === item.id && it.amount === item.amount && it.name === item.name))));
-    return person.annualGross === sample.annualGross || sameItems;
-  });
+// 아직 예시값인 곳을 한 줄로 알려 준다: 항목이 예시면 나누기로, 연봉만 예시면 설정으로.
+function exampleNote(state: AppState): { text: string; tab: "buckets" | "settings" } | null {
+  const sampleItems = state.people.some((person, index) =>
+    person.buckets.some((bucket) => bucket.items.some((item) => initialState.people[index].buckets.some((b) => b.items.some((it) => it.id === item.id && it.amount === item.amount && it.name === item.name)))),
+  );
+  if (sampleItems) return { text: "옅은 숫자는 예시예요 · 칸을 눌러 우리 숫자를 넣어 주세요", tab: "buckets" };
+  const sampleGross = state.people.filter((person, index) => person.annualGross === initialState.people[index].annualGross);
+  if (sampleGross.length) return { text: `${sampleGross.map((person) => person.name).join(" · ")} 연봉이 아직 예시예요 · 설정에서 넣어 주세요`, tab: "settings" };
+  return null;
 }
 
 export default function Home() {
@@ -222,7 +225,7 @@ export default function Home() {
           <FlowBoard
             flow={flow}
             names={names}
-            example={isStillExample(state)}
+            example={exampleNote(state)}
             house={{ daysLeft: daysUntil(moveDate), have: houseCalc.willHave, need: houseCalc.needCash }}
             onOpen={setTab}
           />

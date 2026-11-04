@@ -835,3 +835,5 @@ li.is-example .icon-ghost { opacity: .6; }
 .import-button { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; position: relative; }
 .import-button input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .import-button:focus-within { box-shadow: var(--focus); }
+/* 두 사람 도넛 카드: 설명 줄 수가 달라도 도넛이 같은 높이에 오게 위에 붙인다 */
+.person-donut { align-content: start; }

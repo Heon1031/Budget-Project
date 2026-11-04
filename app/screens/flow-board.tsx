@@ -16,15 +16,15 @@ export function FlowBoard({
 }: {
   flow: Flow;
   names: [string, string];
-  example: boolean;
+  example: { text: string; tab: "buckets" | "settings" } | null;
   house: { daysLeft: number; have: number; need: number };
   onOpen: (tab: "buckets" | "wish" | "house" | "settings") => void;
 }) {
   return (
     <div className="content">
       {example && (
-        <button className="example-banner" onClick={() => onOpen("buckets")}>
-          <Info size={16} /> 옅은 숫자는 예시예요 · 칸을 눌러 우리 숫자를 넣어 주세요
+        <button className="example-banner" onClick={() => onOpen(example.tab)}>
+          <Info size={16} /> {example.text}
         </button>
       )}
       <section className="summary-main hero">
