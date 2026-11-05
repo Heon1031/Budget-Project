@@ -11,6 +11,8 @@ import { AmountInput, RateInput, SnapSlider, shortWon, won } from "./fields";
 import { BUCKET_ICONS, BUCKET_TEMPLATE, newId, type Bucket, type BucketIcon, type BucketKind, type CommonAccount, type Flow, type Person } from "../lib/calc/plan";
 
 // 처음 들어 있던 예시 항목을 그대로 두었는지(이름 · 금액이 예시와 같음).
+// 바구니 금액과 담은 항목의 차이가 이보다 작으면 「딱 맞음」으로 본다(% 끝자리 오차).
+const FIT_WON = 10_000;
 // 바구니 안 항목 하나를 고치면 그 바구니는 「우리 숫자」로 본다 → 나머지 항목의 예시 표시도 뺀다.
 const real = ({ id, name, amount }: { id: string; name: string; amount: number }) => ({ id, name, amount });
 
@@ -175,22 +177,26 @@ export function BucketBoard({
               const nowPercent = pf.net > 0 ? (bucket.planned / pf.net) * 100 : 0;
               const scale = Math.max(bucket.percent, nowPercent, 1);
               const goalAt = (bucket.percent / scale) * 100;
-              const short = bucket.kind === "save" && bucket.left > 0;
+              // %로 정한 바구니는 끝자리가 생겨(예: 49.5만) 딱 떨어지는 항목(50만)과 몇 천 원씩 어긋난다.
+              // 1만 원 안쪽 차이는 「딱 맞음」으로 본다(늘 「넘침」이 뜨던 문제).
+              const fit = Math.abs(bucket.left) < FIT_WON;
+              const short = bucket.kind === "save" && bucket.left > 0 && !fit;
+              const spill = bucket.kind !== "save" && bucket.left < 0 && !fit;
               return (
                 <>
                   <div className="goal-graph" role="img" aria-label={`담은 돈 ${Math.round(nowPercent)}%, 목표 ${bucket.percent}%`}>
                     <span className="goal-tag now" style={tagAt((nowPercent / scale) * 100)}>담은 <b>{Math.round(nowPercent)}%</b></span>
                     <div className="goal-bar">
-                      <span className={bucket.left < 0 && bucket.kind !== "save" ? "over" : ""} style={{ width: `${(nowPercent / scale) * 100}%` }} />
+                      <span className={spill ? "over" : ""} style={{ width: `${(nowPercent / scale) * 100}%` }} />
                       <i style={{ left: `${goalAt}%` }} />
                     </div>
                     <span className="goal-tag goal" style={tagAt(goalAt)}>목표 {bucket.percent}%</span>
                   </div>
                   <p className="goal-text">
-                    <b className={short ? "warn" : bucket.left < 0 && bucket.kind !== "save" ? "bad" : "good"}>
+                    <b className={short ? "warn" : spill ? "bad" : "good"}>
                       {bucket.kind === "save"
                         ? short ? `+${shortWon(bucket.left)} 더 담으면 채워요` : "목표 달성"
-                        : bucket.left < 0 ? `${shortWon(-bucket.left)} 넘침` : bucket.kind === "free" ? `쓸 돈 ${shortWon(bucket.left)}` : `남음 ${shortWon(bucket.left)}`}
+                        : spill ? `${shortWon(-bucket.left)} 넘침` : fit && bucket.planned > 0 ? "딱 맞아요" : bucket.kind === "free" ? `쓸 돈 ${shortWon(Math.max(0, bucket.left))}` : `남음 ${shortWon(bucket.left)}`}
                     </b>
                   </p>
                 </>
